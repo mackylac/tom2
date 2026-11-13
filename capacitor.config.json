@@ -1,0 +1,16 @@
+{
+  "appId": "com.ateliervespera.gallery",
+  "appName": "Atelier Vespera Gallery",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "backgroundColor": "#F7F6F2",
+      "showSpinner": false
+    }
+  }
+}

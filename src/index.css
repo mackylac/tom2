@@ -1,0 +1,281 @@
+@import "tailwindcss";
+
+@layer base {
+  :root,
+  html[data-lighting="daylight"] {
+    --bg-wall: #F7F6F2;
+    --bg-surface: #EFECE6;
+    --bg-plaque: #FAF9F5;
+    --bg-glass: rgba(247, 246, 242, 0.90);
+    --text-primary: #141413;
+    --text-secondary: #4A4843;
+    --text-muted: #78746C;
+    --border-hairline: #E2DFD7;
+    --border-strong: #C9C4B8;
+    --accent-gallery: #8B6B43;
+    --accent-gallery-soft: rgba(139, 107, 67, 0.12);
+    --spotlight-glow: radial-gradient(
+      120% 95% at 50% -10%,
+      rgba(255, 250, 235, 0.85) 0%,
+      rgba(255, 246, 224, 0.25) 48%,
+      rgba(247, 246, 242, 0) 100%
+    );
+    --frame-wall-shadow:
+      0 26px 52px -14px rgba(18, 17, 15, 0.22),
+      0 12px 24px -8px rgba(18, 17, 15, 0.14),
+      0 2px 6px rgba(18, 17, 15, 0.08);
+    --frame-wall-shadow-hover:
+      0 34px 68px -12px rgba(18, 17, 15, 0.30),
+      0 16px 32px -8px rgba(18, 17, 15, 0.18),
+      0 4px 10px rgba(18, 17, 15, 0.10);
+  }
+
+  html[data-lighting="spotlight"] {
+    --bg-wall: #0E0E0E;
+    --bg-surface: #161615;
+    --bg-plaque: #141413;
+    --bg-glass: rgba(14, 14, 14, 0.90);
+    --text-primary: #F3F1EC;
+    --text-secondary: #C2BEB6;
+    --text-muted: #858078;
+    --border-hairline: #242320;
+    --border-strong: #383631;
+    --accent-gallery: #C8A97E;
+    --accent-gallery-soft: rgba(200, 169, 126, 0.14);
+    --spotlight-glow: radial-gradient(
+      115% 90% at 50% -8%,
+      rgba(255, 236, 198, 0.24) 0%,
+      rgba(200, 169, 126, 0.09) 46%,
+      rgba(14, 14, 14, 0) 100%
+    );
+    --frame-wall-shadow:
+      0 32px 64px -12px rgba(0, 0, 0, 0.82),
+      0 16px 32px -8px rgba(0, 0, 0, 0.68),
+      0 0 1px rgba(255, 255, 255, 0.08);
+    --frame-wall-shadow-hover:
+      0 40px 80px -10px rgba(0, 0, 0, 0.92),
+      0 20px 38px -6px rgba(0, 0, 0, 0.75),
+      0 0 28px -4px rgba(200, 169, 126, 0.18);
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: var(--bg-wall);
+    color: var(--text-primary);
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    transition: background-color 450ms cubic-bezier(0.22, 1, 0.36, 1),
+                color 450ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background-color: var(--bg-wall);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  button,
+  a,
+  select,
+  input {
+    touch-action: manipulation;
+  }
+
+  ::selection {
+    background-color: var(--accent-gallery);
+    color: #FAF9F5;
+  }
+}
+
+/* Capacitor / PWA Safe-Area Utilities */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.bottom-safe-offset {
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Hide scrollbars on horizontal touch filter strips while keeping smooth scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Typography Helpers */
+.font-serif-gallery {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+.font-sans-gallery {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.font-mono-plaque {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Physical Picture Frame Moldings */
+.frame-outer-shell {
+  position: relative;
+  box-shadow: var(--frame-wall-shadow);
+  transition:
+    box-shadow 700ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.group:hover .frame-outer-shell {
+  box-shadow: var(--frame-wall-shadow-hover);
+}
+
+/* 1. Matte Black Frame Molding (Anodized Museum Aluminum / Ash Black) */
+.frame-molding-matte-black {
+  background: linear-gradient(145deg, #232322 0%, #141413 48%, #0B0B0B 100%);
+  padding: 10px;
+  border: 1px solid #353533;
+  box-shadow:
+    var(--frame-wall-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.75);
+}
+
+@media (min-width: 640px) {
+  .frame-molding-matte-black {
+    padding: 12px;
+  }
+}
+
+.frame-molding-matte-black::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* 2. Gallery Oak Frame Molding (Warm Quarter-Sawn European White Oak) */
+.frame-molding-gallery-oak {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(82, 54, 28, 0.05) 0px,
+      rgba(82, 54, 28, 0.05) 2px,
+      transparent 2px,
+      transparent 7px
+    ),
+    linear-gradient(145deg, #B99364 0%, #9A7448 52%, #7D5B34 100%);
+  padding: 10px;
+  border: 1px solid #694B29;
+  box-shadow:
+    var(--frame-wall-shadow),
+    inset 0 1px 1px rgba(255, 238, 212, 0.36),
+    inset 0 -2px 3px rgba(46, 30, 14, 0.55);
+}
+
+@media (min-width: 640px) {
+  .frame-molding-gallery-oak {
+    padding: 13px;
+  }
+}
+
+.frame-molding-gallery-oak::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  pointer-events: none;
+  border: 1px solid rgba(255, 240, 218, 0.18);
+}
+
+/* 3. Brushed Bronze Frame Molding (Patina Architectural Brass / Bronze) */
+.frame-molding-brushed-bronze {
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.04) 0px,
+      rgba(255, 255, 255, 0.04) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    linear-gradient(145deg, #9C8259 0%, #735D3C 48%, #4F3E26 100%);
+  padding: 10px;
+  border: 1px solid #59462C;
+  box-shadow:
+    var(--frame-wall-shadow),
+    inset 0 1px 1px rgba(255, 235, 195, 0.40),
+    inset 0 -1px 2px rgba(24, 18, 10, 0.70);
+}
+
+@media (min-width: 640px) {
+  .frame-molding-brushed-bronze {
+    padding: 12px;
+  }
+}
+
+.frame-molding-brushed-bronze::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  pointer-events: none;
+  border: 1px solid rgba(245, 222, 179, 0.22);
+}
+
+/* Archival Cotton Matboard (Passe-Partout) */
+.matboard-ivory {
+  background-color: #FAF9F5;
+  background-image: radial-gradient(rgba(20, 20, 19, 0.025) 1px, transparent 0);
+  background-size: 16px 16px;
+  box-shadow:
+    inset 0 2px 6px rgba(15, 14, 12, 0.16),
+    inset 0 0 0 1px rgba(20, 20, 19, 0.08);
+}
+
+.matboard-charcoal {
+  background-color: #181818;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 0);
+  background-size: 16px 16px;
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.65),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+
+/* Inner 45-degree Bevel Cut around Cover Artwork */
+.artwork-window-bevel {
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    inset 0 3px 8px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(120, 114, 102, 0.28);
+}
+
+.artwork-window-bevel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.24),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.14);
+}
+
+/* Overhead Museum Track Spotlight Effect */
+.overhead-spotlight-cone {
+  background: var(--spotlight-glow);
+  pointer-events: none;
+}

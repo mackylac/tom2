@@ -1,0 +1,496 @@
+{
+  "version": "2.0.0",
+  "updatedAt": "2026-11-13T17:05:00.000Z",
+  "siteSettings": {
+    "brandName": "ATELIER VESPERA",
+    "brandSubtitle": "CURATED DESIGN EXHIBITION · EST. 2021",
+    "brandAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&h=400&q=85",
+    "avatarShape": "circle",
+    "curatorName": "Lê Minh Quân — Giám Đốc Nghệ Thuật (Creative Director)",
+    "showAvatarInHeader": true,
+    "heroBadge": "PERMANENT COLLECTION · DIGITAL ART GALLERY ARCHIVE",
+    "heroTitlePrefix": "Không Gian Triển Lãm",
+    "heroTitleAccent": "Thị Giác",
+    "heroTitleSuffix": "& Lưu Trữ Thiết Kế Đương Đại.",
+    "heroManifesto": "Mỗi dự án được đóng khung như một hiện vật độc bản tại sảnh chính. Chạm vào bất kỳ khung tranh nào để bước vào phòng trưng bày riêng và trải nghiệm toàn bộ bản vẽ chi tiết.",
+    "categories": [
+      "Branding & Identity",
+      "Packaging Design",
+      "Menu & Print",
+      "Key Visual & Digital"
+    ],
+    "defaultLightingMode": "daylight",
+    "contactEmail": "studio@atelier-vespera.example",
+    "contactPhoneZalo": "+84 (0) 909 284 206 (Zalo / WhatsApp)",
+    "galleryHours": "TUE — SAT · 10:00 — 19:00",
+    "studioLocations": "DISTRICT 1, SAIGON · NAKAGYO, KYOTO",
+    "socialLinks": {
+      "behance": "https://www.behance.net",
+      "instagram": "https://www.instagram.com",
+      "linkedin": "https://www.linkedin.com"
+    },
+    "commissionBadge": "PRIVATE COMMISSION & ARCHIVAL CONSULTATION",
+    "commissionTitle": "Khởi Tạo Tác Phẩm Thiết Kế Độc Bản Cho Thương Hiệu Của Bạn.",
+    "commissionDescription": "Chúng tôi nhận thực hiện giới hạn 03 dự án mỗi quý nhằm đảm bảo độ tinh xảo tuyệt đối từ hệ thống nhận diện, kết cấu bao bì vật lý cho đến ấn phẩm biên tập.",
+    "footerCopyright": "© 2026 ATELIER VESPERA — DIGITAL ART GALLERY ARCHIVE"
+  },
+  "projects": [
+    {
+      "id": "kohi-roasters-kyoto",
+      "exhibitNumber": "01",
+      "title": "Kōhī Roasters Kyoto",
+      "subtitle": "Architectural Brand System & Tactile Monolith Identity",
+      "client": "Kōhī Roasters Co., Kyoto",
+      "category": "Branding & Identity",
+      "year": "2026",
+      "role": "Art Direction · Visual Identity · Tactile Print System",
+      "deliverables": [
+        "Brand Monograph",
+        "Custom Stencil Wordmark",
+        "Washi Paper Collateral",
+        "Wayfinding Signage",
+        "Packaging System"
+      ],
+      "frameStyle": "gallery-oak",
+      "matboardTone": "ivory",
+      "matboardSize": "standard",
+      "hidden": false,
+      "coverImage": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&h=1500&q=85",
+      "coverAspect": "portrait",
+      "location": "Nakagyo Ward, Kyoto",
+      "curatorialStatement": "Hệ thống nhận diện thương hiệu lấy cảm hứng từ cấu trúc gỗ Hinoki truyền thống và bề mặt giấy Washi thủ công, tôn vinh sự tĩnh lặng trong nghi thức pha chế cà phê đặc sản.",
+      "conceptNarrative": "Thay vì sử dụng các biểu tượng hạt cà phê quen thuộc, nhận diện của Kōhī Roasters Kyoto được xây dựng từ tỷ lệ kiến trúc của những gian trà thất cổ tại quận Nakagyo. Từng khoảng trắng trên danh thiếp, phong bì và bảng hiệu đều tuân theo nhịp thở của không gian âm (Ma — 間), để chất liệu giấy mỹ thuật định lượng 420gsm và mực in dập chìm tự kể câu chuyện về sự nguyên bản.",
+      "executionDetails": "Toàn bộ ấn phẩm được in letterpress thủ công với hai sắc độ mực than tùng (Sumi Ink) và đất sét nung trên nền giấy bông không phủ. Hệ thống lưới biên tập 12 cột được khóa chặt với bộ chữ Serif cổ điển tương phản cùng nhãn thông số kỹ thuật Monospace chuẩn xác như phiếu lưu trữ phòng thí nghiệm rang xay.",
+      "galleryImages": [
+        {
+          "id": "kohi-1",
+          "url": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1920&h=1000&q=85",
+          "caption": "Toàn cảnh quầy bar gỗ sồi và hệ thống bảng hiệu đồng khắc axit tại sảnh chính Kyoto Flagship (Panorama 1.92:1).",
+          "width": 1920,
+          "height": 1000,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "kohi-2",
+          "url": "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=900&h=1200&q=85",
+          "caption": "Ấn phẩm thực đơn mùa thu dập nổi trên giấy Washi 380gsm với số hiệu lô rang thủ công (Portrait 3:4).",
+          "width": 900,
+          "height": 1200,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "kohi-3",
+          "url": "https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=900&h=1200&q=85",
+          "caption": "Chi tiết tem niêm phong sáp đen và nhãn phân loại độ cao vùng trồng Ethiopia Yirgacheffe (Portrait 3:4).",
+          "width": 900,
+          "height": 1200,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "kohi-4",
+          "url": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1400&h=1000&q=85",
+          "caption": "Bộ ấn phẩm văn phòng phẩm thương hiệu: Danh thiếp cạnh sơn mài, phong bì khâu chỉ và sổ tay thử nếm.",
+          "width": 1400,
+          "height": 1000,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "kohi-5",
+          "url": "https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=1000&h=1000&q=85",
+          "caption": "Hộp thiếc sơn tĩnh điện đen nhám bảo quản hạt cà phê nguyên bản khỏi ánh sáng mặt trời (Square 1:1).",
+          "width": 1000,
+          "height": 1000,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "kohi-6",
+          "url": "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=1350&h=1000&q=85",
+          "caption": "Góc trưng bày dụng cụ pha chế thủ công và cẩm nang hướng dẫn chiết xuất dành cho khách sưu tầm.",
+          "width": 1350,
+          "height": 1000,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "kohi-7",
+          "url": "https://images.unsplash.com/photo-1453614512568-c4024d13c247?auto=format&fit=crop&w=1920&h=980&q=85",
+          "caption": "Mặt tiền kiến trúc gỗ tuyết tùng đốt bề mặt (Shou Sugi Ban) dưới ánh nắng sớm tại Nakagyo (Panorama 1.96:1).",
+          "width": 1920,
+          "height": 980,
+          "layoutOverride": "auto"
+        }
+      ]
+    },
+    {
+      "id": "maison-verle-botanicals",
+      "exhibitNumber": "02",
+      "title": "Maison Verlé Apothecary",
+      "subtitle": "Haute Perfumery & Botanical Extract Packaging Architecture",
+      "client": "Maison Verlé Paris — Grasse",
+      "category": "Packaging Design",
+      "year": "2026",
+      "role": "Structural Packaging · Bottle Form · Typography",
+      "deliverables": [
+        "Flacon Glass Architecture",
+        "Rigid Linen Collector Box",
+        "Foil-Stamped Batch Labels",
+        "Exhibition Lookbook"
+      ],
+      "frameStyle": "brushed-bronze",
+      "matboardTone": "ivory",
+      "matboardSize": "standard",
+      "hidden": false,
+      "coverImage": "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1400&h=1050&q=85",
+      "coverAspect": "landscape",
+      "location": "Marais District, Paris",
+      "curatorialStatement": "Cấu trúc bao bì nước hoa thủ công kết hợp thủy tinh thổi dày đáy, nhãn giấy vải lanh đánh số lô chưng cất và hộp cứng bọc vải dệt tự nhiên.",
+      "conceptNarrative": "Lấy cảm hứng từ các bình mẫu vật thực vật học thế kỷ XIX tại vùng Grasse, Maison Verlé loại bỏ hoàn toàn các chi tiết trang trí thừa để tập trung vào trọng lượng vật lý của thủy tinh và xúc giác của giấy cotton thô. Mỗi nhãn chai được thiết kế như một phiếu lưu trữ bảo tàng với thông tin ngày thu hoạch tinh dầu, tọa độ vườn nguyên liệu và chữ ký của nghệ nhân pha chế.",
+      "executionDetails": "Vỏ hộp sử dụng kết cấu mở nắp nam châm ẩn bọc vải lanh Bỉ màu đá vôi, ép kim đồng cổ độ sâu 0.4mm. Nhãn chính trên thân chai được cắt vát bốn góc tỉ mỉ, chống ẩm tuyệt đối nhưng vẫn giữ nguyên độ sần tự nhiên khi chạm tay.",
+      "galleryImages": [
+        {
+          "id": "verle-1",
+          "url": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1920&h=1020&q=85",
+          "caption": "Bộ sưu tập 05 mùi hương nguyên bản trưng bày trên bệ đá travertine nguyên khối (Panorama 1.88:1).",
+          "width": 1920,
+          "height": 1020,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "verle-2",
+          "url": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=900&h=1200&q=85",
+          "caption": "Chai thủy tinh No. 04 Vetiver & Fig với cổ chai bọc đồng xước và nhãn lưu trữ đóng dấu nổi (Portrait 3:4).",
+          "width": 900,
+          "height": 1200,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "verle-3",
+          "url": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=900&h=1200&q=85",
+          "caption": "Cận cảnh kết cấu giấy cotton dệt nổi và hệ thống chữ Serif khắc mảnh trên dòng tinh dầu cô đặc (Portrait 3:4).",
+          "width": 900,
+          "height": 1200,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "verle-4",
+          "url": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1400&h=1050&q=85",
+          "caption": "Thiết kế hộp cứng mở hai cánh kèm khay khuôn giấy ép bã mía bảo vệ thân chai trong quá trình vận chuyển.",
+          "width": 1400,
+          "height": 1050,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "verle-5",
+          "url": "https://images.unsplash.com/photo-1615397349754-cfa2066a298e?auto=format&fit=crop&w=1080&h=1080&q=85",
+          "caption": "Bộ ống thử hương (Discovery Vial Set) đặt trong bao da thực vật khâu tay (Square 1:1).",
+          "width": 1080,
+          "height": 1080,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "verle-6",
+          "url": "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=1360&h=1000&q=85",
+          "caption": "Thẻ thử hương dập nổi logo monogram MV và phong bì thư cảm ơn cá nhân hóa cho từng khách hàng.",
+          "width": 1360,
+          "height": 1000,
+          "layoutOverride": "auto"
+        }
+      ]
+    },
+    {
+      "id": "atelier-du-pain-menu",
+      "exhibitNumber": "03",
+      "title": "L'Atelier du Pain & Vin",
+      "subtitle": "Tactile Gastronomy Menu & Sommelier Archive System",
+      "client": "L'Atelier Gastronomy Group, Lyon",
+      "category": "Menu & Print",
+      "year": "2025",
+      "role": "Editorial Design · Menu Engineering · Bookbinding",
+      "deliverables": [
+        "Leather-Bound Wine Compendium",
+        "Daily Sourdough & Tasting Sheet",
+        "Sommelier Tasting Cards",
+        "Brass Table Number Monoliths"
+      ],
+      "frameStyle": "matte-black",
+      "matboardTone": "ivory",
+      "matboardSize": "standard",
+      "hidden": false,
+      "coverImage": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=1200&h=1500&q=85",
+      "coverAspect": "portrait",
+      "location": "Presqu’île, Lyon",
+      "curatorialStatement": "Thiết kế hệ thống thực đơn ẩm thực cao cấp và danh mục rượu vang đóng gáy ốc đồng, nơi nghệ thuật sắp chữ biên tập (Editorial Typography) dẫn dắt trải nghiệm vị giác.",
+      "conceptNarrative": "Một thực đơn xuất sắc không chỉ liệt kê món ăn mà phải định hình nhịp điệu của bữa tối. Chúng tôi thiết kế thực đơn của L’Atelier du Pain & Vin như một ấn phẩm tạp chí nghệ thuật độc lập: tờ thực đơn món ăn theo mùa được in mới mỗi chiều trên giấy can mờ và kẹp vào bìa da thuộc thảo mộc bằng thanh đồng nguyên khối.",
+      "executionDetails": "Phân cấp chữ được tính toán tỉ mỉ để thực khách có thể đọc rõ ràng dưới ánh nến ấm 2200K của nhà hàng. Tên món ăn sử dụng Cormorant Garamond cỡ lớn thoáng đãng, trong khi thành phần nguyên liệu và niên vụ rượu vang được căn chỉnh theo hệ lưới tab-stop chuẩn xác tuyệt đối.",
+      "galleryImages": [
+        {
+          "id": "pain-1",
+          "url": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1920&h=1000&q=85",
+          "caption": "Không gian bàn tiệc tối giản với bộ thực đơn bìa vải lanh đen và ly pha lê thủ công (Panorama 1.92:1).",
+          "width": 1920,
+          "height": 1000,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "pain-2",
+          "url": "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=900&h=1250&q=85",
+          "caption": "Trang mở đầu Danh mục Rượu Vang Tự Nhiên (Natural Wine Index) phân vùng theo thổ nhưỡng Pháp (Portrait).",
+          "width": 900,
+          "height": 1250,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "pain-3",
+          "url": "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=900&h=1250&q=85",
+          "caption": "Thực đơn Tasting Menu 7 món kèm sơ đồ hương vị và ghi chú của Bếp trưởng (Portrait).",
+          "width": 900,
+          "height": 1250,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "pain-4",
+          "url": "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1400&h=1000&q=85",
+          "caption": "Ấn phẩm giới thiệu quy trình lên men bánh mì Sourdough 48 giờ đặt tại bàn đón khách.",
+          "width": 1400,
+          "height": 1000,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "pain-5",
+          "url": "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=1350&h=1000&q=85",
+          "caption": "Bộ thẻ đánh dấu hầm rượu và phiếu lưu niệm niên vụ rượu vang dành tặng thực khách.",
+          "width": 1350,
+          "height": 1000,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "pain-6",
+          "url": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1920&h=960&q=85",
+          "caption": "Trải nghiệm tổng thể trên mặt bàn gỗ sồi nguyên tấm: Thực đơn, khăn ăn thêu tay và thẻ tên đồng (Panorama 2.0:1).",
+          "width": 1920,
+          "height": 960,
+          "layoutOverride": "auto"
+        }
+      ]
+    },
+    {
+      "id": "kinetic-archive-symposium",
+      "exhibitNumber": "04",
+      "title": "Venice Architecture Biennale Pavilion",
+      "subtitle": "Key Visual System, Exhibition Monograph & Spatial Graphics",
+      "client": "Fondazione Spazio Luce, Venezia",
+      "category": "Key Visual & Digital",
+      "year": "2026",
+      "role": "Key Visual Direction · Exhibition Scenography · Digital Archive",
+      "deliverables": [
+        "Key Visual Poster Series",
+        "Pavilion Environmental Typography",
+        "520-Page Exhibition Catalogue",
+        "Digital Audio-Guide Interface"
+      ],
+      "frameStyle": "matte-black",
+      "matboardTone": "charcoal",
+      "matboardSize": "standard",
+      "hidden": false,
+      "coverImage": "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&h=1200&q=85",
+      "coverAspect": "square",
+      "location": "Arsenale, Venice",
+      "curatorialStatement": "Hệ thống Key Visual và đồ họa không gian cho triển lãm kiến trúc đương đại tại Venice, khai thác sự giao thoa giữa ánh sáng tự nhiên và kết cấu bê tông trần.",
+      "conceptNarrative": "Triển lãm \"Light as Structural Matter\" khảo sát cách ánh sáng mặt trời định hình không gian kiến trúc qua các khe hẹp. Chúng tôi phát triển ngôn ngữ thị giác dựa trên các dải tương phản sáng-tối sắc lẹm và hệ thống lưới mô-đun tỷ lệ vàng, biến mỗi tấm áp phích khổ lớn A0 thành một mặt cắt kiến trúc thu nhỏ.",
+      "executionDetails": "Bộ áp phích chủ đạo được in lụa (screenprint) với mực bạc phản quang nhẹ trên nền giấy đen tuyền Pergraphica Infinite Black. Tại sảnh triển lãm Arsenale, hệ thống chữ chỉ dẫn cao 3.2 mét được cắt trực tiếp từ thép đen sơn tĩnh điện, đổ bóng tự nhiên lên tường gạch cổ.",
+      "galleryImages": [
+        {
+          "id": "venice-1",
+          "url": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1920&h=1000&q=85",
+          "caption": "Hệ thống banner mặt tiền và chữ đồ họa không gian tại sảnh chính Arsenale Pavilion (Panorama 1.92:1).",
+          "width": 1920,
+          "height": 1000,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "venice-2",
+          "url": "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=900&h=1200&q=85",
+          "caption": "Áp phích chính thức số 01: Tương phản hình học và cấu trúc bóng đổ kiến trúc (Portrait 3:4).",
+          "width": 900,
+          "height": 1200,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "venice-3",
+          "url": "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=900&h=1200&q=85",
+          "caption": "Áp phích chính thức số 02: Hệ thống lưới mô-đun và thông số tọa độ mặt trời tại Venice (Portrait 3:4).",
+          "width": 900,
+          "height": 1200,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "venice-4",
+          "url": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1400&h=1000&q=85",
+          "caption": "Góc nhìn kiến trúc nguyên khối làm cảm hứng cho bố cục nhiếp ảnh chủ đạo của triển lãm.",
+          "width": 1400,
+          "height": 1000,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "venice-5",
+          "url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&h=1000&q=85",
+          "caption": "Ấn phẩm Catalogue 520 trang đóng gáy mở phẳng (Swiss Binding) lộ chỉ khâu đen (Square 1:1).",
+          "width": 1000,
+          "height": 1000,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "venice-6",
+          "url": "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1350&h=1000&q=85",
+          "caption": "Hệ thống bảng chú thích tác phẩm bằng nhôm anod hóa đen đặt nghiêng 15 độ tại các phòng trưng bày.",
+          "width": 1350,
+          "height": 1000,
+          "layoutOverride": "auto"
+        }
+      ]
+    },
+    {
+      "id": "son-mai-hoi-an",
+      "exhibitNumber": "05",
+      "title": "Đông Phương Lacquer Studio",
+      "subtitle": "Heritage Craft Rebrand, Collector Monograph & Exhibition Identity",
+      "client": "Đông Phương Fine Art, Hội An",
+      "category": "Branding & Identity",
+      "year": "2025",
+      "role": "Brand Strategy · Art Direction · Editorial Monograph",
+      "deliverables": [
+        "Bilingual Heritage Identity",
+        "Collector Certificate System",
+        "Hardcover Art Monograph",
+        "Silk-Wrapped Gift Boxes"
+      ],
+      "frameStyle": "brushed-bronze",
+      "matboardTone": "charcoal",
+      "matboardSize": "standard",
+      "hidden": false,
+      "coverImage": "https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?auto=format&fit=crop&w=1200&h=1500&q=85",
+      "coverAspect": "portrait",
+      "location": "Phố Cổ Hội An, Việt Nam",
+      "curatorialStatement": "Tái định vị thương hiệu xưởng sơn mài truyền thống thành không gian lưu trữ nghệ thuật đương đại, kết hợp sắc đỏ chu sa trầm, vàng quỳ và đen cánh gián.",
+      "conceptNarrative": "Nghệ thuật sơn mài Việt Nam là nghệ thuật của thời gian — nơi hàng chục lớp sơn được phủ lên rồi lại mài đi để lộ ra chiều sâu óng ánh bên dưới. Hệ thống nhận diện Đông Phương tái hiện triết lý \"ẩn — hiện\" đó qua kỹ thuật dập chìm nhiều tầng và bảng màu trầm mặc, tôn vinh bàn tay người nghệ nhân mà không rơi vào lối mòn trang trí dân gian cũ kỹ.",
+      "executionDetails": "Mỗi tác phẩm xuất xưởng đi kèm một Chứng thư Lưu trữ (Archival Provenance Certificate) in trên giấy dó thủ công, đóng dấu triện đồng khắc tay và gắn mã định danh độc bản. Cuốn sách chuyên khảo song ngữ Việt — Anh được bọc vải lụa tơ tằm nhuộm tự nhiên tại làng nghề Mã Châu.",
+      "galleryImages": [
+        {
+          "id": "sonmai-1",
+          "url": "https://images.unsplash.com/photo-1577083552431-6e5fd01aa342?auto=format&fit=crop&w=1920&h=1000&q=85",
+          "caption": "Không gian trưng bày các tấm bình phong sơn mài thếp vàng quỳ dưới ánh đèn rọi điểm (Panorama 1.92:1).",
+          "width": 1920,
+          "height": 1000,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "sonmai-2",
+          "url": "https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?auto=format&fit=crop&w=900&h=1200&q=85",
+          "caption": "Bìa sách chuyên khảo \"Lớp Thời Gian\" bọc vải lụa tơ tằm dập chìm chữ vàng 24K (Portrait 3:4).",
+          "width": 900,
+          "height": 1200,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "sonmai-3",
+          "url": "https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=900&h=1200&q=85",
+          "caption": "Chứng thư xác thực tác phẩm độc bản kèm mẫu thử sắc độ sơn cánh gián và vỏ trứng (Portrait 3:4).",
+          "width": 900,
+          "height": 1200,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "sonmai-4",
+          "url": "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=1400&h=1000&q=85",
+          "caption": "Trải trang biên tập bên trong cuốn Monograph: Đối thoại giữa ảnh chụp cận cảnh bề mặt sơn và bản vẽ kỹ thuật.",
+          "width": 1400,
+          "height": 1000,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "sonmai-5",
+          "url": "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=1350&h=1000&q=85",
+          "caption": "Hộp gỗ sơn mài đựng bộ ấn phẩm VIP và thẻ mời khai mạc triển lãm cá nhân tại Hội An.",
+          "width": 1350,
+          "height": 1000,
+          "layoutOverride": "auto"
+        }
+      ]
+    },
+    {
+      "id": "oro-nero-artisan-cacao",
+      "exhibitNumber": "06",
+      "title": "Oro Nero Single-Estate Cacao",
+      "subtitle": "Architectural Chocolate Bars & Numbered Collector Packaging",
+      "client": "Oro Nero Cioccolato, Torino",
+      "category": "Packaging Design",
+      "year": "2026",
+      "role": "Packaging Design · Custom Chocolate Mold · Print Production",
+      "deliverables": [
+        "Geometric Bar Mold Architecture",
+        "Gold-Foil Numbered Sleeves",
+        "Tasting Flight Box",
+        "Retail Display Podiums"
+      ],
+      "frameStyle": "gallery-oak",
+      "matboardTone": "charcoal",
+      "matboardSize": "standard",
+      "hidden": false,
+      "coverImage": "https://images.unsplash.com/photo-1549007994-cb92caebd54b?auto=format&fit=crop&w=1400&h=1050&q=85",
+      "coverAspect": "landscape",
+      "location": "Torino, Italia",
+      "curatorialStatement": "Thiết kế bao bì sô-cô-la thủ công nguyên bản (Bean-to-Bar) như những ấn bản sách nghệ thuật đánh số thứ tự, tôn vinh tỷ lệ cacao thuần khiết từ 72% đến 100%.",
+      "conceptNarrative": "Mỗi mùa thu hoạch từ các nông trại đơn vùng tại Peru, Madagascar và Đắk Lắk đều mang cấu trúc hương vị không lặp lại. Chúng tôi thiết kế bao bì Oro Nero như một thư viện lưu trữ niên vụ: mỗi thanh sô-cô-la được bọc trong lớp giấy mỹ thuật gập origami không dùng keo dán, khi mở ra hoàn toàn sẽ hiện lên bản đồ địa hình vùng trồng và biểu đồ nốt hương chi tiết.",
+      "executionDetails": "Khuôn đúc thanh sô-cô-la được thiết kế riêng theo tỷ lệ hình học vát cạnh giúp bẻ miếng chuẩn xác mà không vụn vỡ. Vỏ ngoài sử dụng giấy Fedrigoni Sirio Color đen sâu kết hợp kỹ thuật ép nhũ đồng vi điểm (micro-embossed foil) sắc nét đến từng đường đồng mức.",
+      "galleryImages": [
+        {
+          "id": "oronero-1",
+          "url": "https://images.unsplash.com/photo-1549007994-cb92caebd54b?auto=format&fit=crop&w=1920&h=1000&q=85",
+          "caption": "Dải sản phẩm Oro Nero Single-Estate từ 72% đến 100% Cacao đặt trên bàn đá đen (Panorama 1.92:1).",
+          "width": 1920,
+          "height": 1000,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "oronero-2",
+          "url": "https://images.unsplash.com/photo-1511381939415-e44015466834?auto=format&fit=crop&w=900&h=1200&q=85",
+          "caption": "Chi tiết bao bì phiên bản giới hạn Cuyagua 85% với tem niêm phong đánh số tay (Portrait 3:4).",
+          "width": 900,
+          "height": 1200,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "oronero-3",
+          "url": "https://images.unsplash.com/photo-1606312619070-d48b4c652a52?auto=format&fit=crop&w=900&h=1200&q=85",
+          "caption": "Cấu trúc khuôn hình học mặt trong thanh sô-cô-la và lớp giấy bạc vàng champagne bảo quản hương vị (Portrait 3:4).",
+          "width": 900,
+          "height": 1200,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "oronero-4",
+          "url": "https://images.unsplash.com/photo-1481391319762-47dff72954d9?auto=format&fit=crop&w=1400&h=1000&q=85",
+          "caption": "Hộp quà tặng sưu tầm 04 thanh (Collector Flight Box) kèm sách hướng dẫn thưởng thức cùng rượu mạnh.",
+          "width": 1400,
+          "height": 1000,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "oronero-5",
+          "url": "https://images.unsplash.com/photo-1548907040-4baa42d10919?auto=format&fit=crop&w=1000&h=1000&q=85",
+          "caption": "Mặt trong bao bì mở phẳng theo cấu trúc Origami, in sơ đồ nốt hương và thông số lên men (Square 1:1).",
+          "width": 1000,
+          "height": 1000,
+          "layoutOverride": "auto"
+        },
+        {
+          "id": "oronero-6",
+          "url": "https://images.unsplash.com/photo-1526081347589-7fa3cb41b4b2?auto=format&fit=crop&w=1380&h=1000&q=85",
+          "caption": "Quầy trưng bày trải nghiệm thử nếm tại cửa hàng flagship Torino.",
+          "width": 1380,
+          "height": 1000,
+          "layoutOverride": "auto"
+        }
+      ]
+    }
+  ]
+}

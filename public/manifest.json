@@ -1,0 +1,19 @@
+{
+  "name": "ATELIER VESPERA — Digital Art Gallery Portfolio",
+  "short_name": "Atelier Vespera",
+  "description": "Không Gian Triển Lãm Nghệ Thuật Số & Lưu Trữ Thiết Kế Đương Đại (Branding, Packaging, Menu & Print, Key Visual).",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F7F6F2",
+  "theme_color": "#F7F6F2",
+  "categories": ["design", "art", "portfolio"],
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
