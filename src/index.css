@@ -120,8 +120,26 @@
 }
 
 /* Typography Helpers */
+.font-serif,
 .font-serif-gallery {
   font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+/* 3D Perspective & Museum Spatial Utilities */
+.perspective-1200 {
+  perspective: 1200px;
+}
+
+.perspective-1400 {
+  perspective: 1400px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
 }
 
 .font-sans-gallery {

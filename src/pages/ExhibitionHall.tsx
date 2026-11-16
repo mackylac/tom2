@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   CheckCircle2,
   LampCeiling,
@@ -92,42 +92,42 @@ export const ExhibitionHall: React.FC<ExhibitionHallProps> = ({
   };
 
   return (
-    <div className="min-h-[100dvh] bg-[var(--bg-wall)] text-[var(--text-primary)]">
+    <motion.div
+      initial={{ opacity: 0, scale: 0.985 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 1.04, filter: 'blur(4px)' }}
+      transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+      className="min-h-[100dvh] bg-[var(--bg-wall)] text-[var(--text-primary)]"
+    >
       {/* Adaptive Top Gallery Navigation Bar (Pure Visitor Exhibition Experience) */}
       <header className="pt-safe sticky top-0 z-30 border-b border-[var(--border-hairline)] bg-[var(--bg-glass)] backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-3 px-4 sm:h-18 sm:px-10 lg:px-16">
-          {/* Studio Identity & Brand Avatar (Editable from /admin) */}
-          <div className="flex items-center gap-4">
-            <a
-              href="#top"
-              onClick={(e) => {
-                e.preventDefault();
-                scrollToTopHall();
-              }}
-              className="group flex items-center gap-3 text-left"
-            >
-              {siteSettings.showAvatarInHeader !== false &&
-                siteSettings.brandAvatar && (
-                  <img
-                    src={siteSettings.brandAvatar}
-                    alt={siteSettings.brandName}
-                    className={`h-9 w-9 shrink-0 border border-[var(--border-strong)] object-cover sm:h-10 sm:w-10 ${
-                      siteSettings.avatarShape === 'square'
-                        ? 'rounded-none'
-                        : 'rounded-full'
-                    }`}
-                  />
-                )}
-              <div className="flex items-baseline gap-3">
-                <span className="whitespace-nowrap font-serif-gallery text-xl font-medium tracking-tight text-[var(--text-primary)] sm:text-3xl">
-                  {siteSettings.brandName}
-                </span>
-                <span className="hidden font-mono-plaque text-[10px] tracking-[0.22em] text-[var(--text-muted)] uppercase lg:inline">
-                  {siteSettings.brandSubtitle}
-                </span>
-              </div>
-            </a>
-          </div>
+        <div className="mx-auto flex h-18 max-w-[1440px] items-center justify-between gap-3 px-4 sm:h-20 sm:px-10 md:h-22 lg:px-16">
+          {/* Studio Identity & Transparent Cutout Logo (Editable from /admin) */}
+          <a
+            href="#top"
+            onClick={(e) => {
+              e.preventDefault();
+              scrollToTopHall();
+            }}
+            className="group flex items-center gap-3.5 text-left md:gap-4"
+          >
+            {siteSettings.showAvatarInHeader !== false &&
+              siteSettings.brandAvatar && (
+                <img
+                  src={siteSettings.brandAvatar}
+                  alt={siteSettings.brandName}
+                  className="bg-transparent border-none shadow-none object-contain h-11 md:h-14 w-auto transition-transform duration-500 hover:scale-105"
+                />
+              )}
+            <div className="flex items-center gap-3.5 md:gap-4">
+              <span className="whitespace-nowrap text-2xl sm:text-3xl md:text-4xl font-serif font-semibold tracking-tight leading-none text-[var(--text-primary)]">
+                {siteSettings.brandName}
+              </span>
+              <span className="hidden font-mono-plaque text-[10px] tracking-[0.22em] text-[var(--text-muted)] uppercase lg:inline">
+                {siteSettings.brandSubtitle}
+              </span>
+            </div>
+          </a>
 
           {/* Right Controls: Gallery Lighting Mode + Commission CTA */}
           <div className="flex items-center gap-2 sm:gap-3">
@@ -243,14 +243,18 @@ export const ExhibitionHall: React.FC<ExhibitionHallProps> = ({
         </section>
 
         {/* Adaptive Gallery Wall:
-            - Mobile: 1-Column vertical feed with generous viewport framing
-            - Desktop: 2-Column staggered gallery wall (Each Frame = Strictly 01 Cover Image) */}
+            - Mobile: 1-Column vertical feed with generous viewport framing & scroll-linked 3D
+            - Desktop: 2-Column staggered gallery wall with 3D spatial scroll & parallax (Each Frame = Strictly 01 Cover Image) */}
         <section
           aria-label="Danh sách khung tranh dự án"
+          style={{ perspective: '1400px' }}
           className="py-12 sm:py-16 md:py-24"
         >
           {filteredProjects.length > 0 ? (
-            <div className="grid grid-cols-1 gap-x-14 gap-y-14 sm:gap-y-20 md:grid-cols-2 lg:gap-x-24 lg:gap-y-28">
+            <div
+              style={{ transformStyle: 'preserve-3d' }}
+              className="grid grid-cols-1 gap-x-14 gap-y-14 sm:gap-y-20 md:grid-cols-2 lg:gap-x-24 lg:gap-y-28"
+            >
               <AnimatePresence mode="popLayout">
                 {filteredProjects.map((project, index) => (
                   <PhysicalFrame
@@ -300,15 +304,11 @@ export const ExhibitionHall: React.FC<ExhibitionHallProps> = ({
 
               {/* Curator Profile & Avatar Plaque */}
               {siteSettings.brandAvatar && (
-                <div className="flex items-center gap-3.5 border-t border-[var(--border-hairline)] pt-5">
+                <div className="flex items-center gap-4 border-t border-[var(--border-hairline)] pt-5">
                   <img
                     src={siteSettings.brandAvatar}
                     alt={siteSettings.curatorName || siteSettings.brandName}
-                    className={`h-13 w-13 shrink-0 border border-[var(--border-strong)] object-cover ${
-                      siteSettings.avatarShape === 'square'
-                        ? 'rounded-none'
-                        : 'rounded-full'
-                    }`}
+                    className="bg-transparent border-none shadow-none object-contain h-12 md:h-14 w-auto shrink-0 transition-transform duration-500 hover:scale-105"
                   />
                   <div>
                     <div className="font-mono-plaque text-[9.5px] tracking-[0.18em] text-[var(--accent-gallery)] uppercase">
@@ -511,6 +511,6 @@ export const ExhibitionHall: React.FC<ExhibitionHallProps> = ({
         onJumpToFilter={scrollToFilterBar}
         onJumpToContact={scrollToContact}
       />
-    </div>
+    </motion.div>
   );
 };

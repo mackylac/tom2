@@ -1,4 +1,5 @@
 import React from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { StudioManagerModal } from './components/StudioManagerModal';
 import { PortfolioProvider, usePortfolio } from './context/PortfolioContext';
 import { useGalleryRouter } from './hooks/useGalleryRouter';
@@ -40,25 +41,28 @@ const GalleryApplicationShell: React.FC = () => {
       : pool[0];
 
   return (
-    <>
-      {routeMode === 'project' && activeProject && nextProject ? (
-        <ProjectRoom
-          key={activeProject.id}
-          project={activeProject}
-          nextProject={nextProject}
-          onBackToHall={navigateToHall}
-          onSelectProject={navigateToProject}
-          onOpenAdmin={navigateToAdmin}
-        />
-      ) : (
-        <ExhibitionHall
-          onSelectProject={navigateToProject}
-          onOpenAdmin={navigateToAdmin}
-        />
-      )}
+    <div style={{ perspective: '1400px' }} className="overflow-x-hidden">
+      <AnimatePresence mode="wait">
+        {routeMode === 'project' && activeProject && nextProject ? (
+          <ProjectRoom
+            key={`room-${activeProject.id}`}
+            project={activeProject}
+            nextProject={nextProject}
+            onBackToHall={navigateToHall}
+            onSelectProject={navigateToProject}
+            onOpenAdmin={navigateToAdmin}
+          />
+        ) : (
+          <ExhibitionHall
+            key="main-exhibition-hall"
+            onSelectProject={navigateToProject}
+            onOpenAdmin={navigateToAdmin}
+          />
+        )}
+      </AnimatePresence>
 
       <StudioManagerModal />
-    </>
+    </div>
   );
 };
 

@@ -1843,22 +1843,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-                  {/* Live Avatar Emblem Preview */}
-                  <div className="flex flex-col items-center gap-2.5 border border-[var(--border-hairline)] bg-[var(--bg-wall)] p-4 sm:w-44">
+                  {/* Live Transparent Cutout Logo / Avatar Preview */}
+                  <div className="flex flex-col items-center justify-center gap-2.5 border border-[var(--border-hairline)] bg-[var(--bg-wall)] p-4 sm:w-48">
                     <img
                       src={
                         siteSettings.brandAvatar ||
                         'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&h=400&q=85'
                       }
                       alt={siteSettings.brandName}
-                      className={`h-24 w-24 border-2 border-[var(--accent-gallery)] object-cover shadow-md ${
-                        siteSettings.avatarShape === 'square'
-                          ? 'rounded-none'
-                          : 'rounded-full'
-                      }`}
+                      className="bg-transparent border-none shadow-none object-contain h-16 md:h-20 w-auto transition-transform duration-500 hover:scale-105"
                     />
                     <span className="font-mono-plaque text-[9.5px] tracking-[0.16em] text-[var(--text-muted)] uppercase">
-                      XEM TRƯỚC AVATAR WEB
+                      HIỂN THỊ TRỰC TIẾP (KHÔNG KHUNG)
                     </span>
                   </div>
 

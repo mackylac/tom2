@@ -320,10 +320,13 @@ export function processUploadedImageFile(
         }
         ctx.drawImage(img, 0, 0, targetW, targetH);
 
-        // Prefer WebP compression for lighter Base64 footprint, fallback to JPEG
-        let dataUrl = canvas.toDataURL('image/webp', 0.85);
+        // Prefer WebP compression (supports full alpha transparency), fallback to PNG for transparent cutouts or JPEG
+        let dataUrl = canvas.toDataURL('image/webp', 0.9);
         if (!dataUrl.startsWith('data:image/webp')) {
-          dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          dataUrl =
+            file.type === 'image/png'
+              ? canvas.toDataURL('image/png')
+              : canvas.toDataURL('image/jpeg', 0.85);
         }
 
         resolve({

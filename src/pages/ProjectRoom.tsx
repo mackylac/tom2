@@ -56,27 +56,66 @@ export const ProjectRoom: React.FC<ProjectRoomProps> = ({
   return (
     <motion.div
       key={project.id}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.45 }}
+      style={{ transformStyle: 'preserve-3d' }}
+      initial={{
+        opacity: 0,
+        scale: 0.91,
+        rotateX: 6,
+        z: -140,
+        filter: 'blur(6px)',
+      }}
+      animate={{
+        opacity: 1,
+        scale: 1,
+        rotateX: 0,
+        z: 0,
+        filter: 'blur(0px)',
+      }}
+      exit={{
+        opacity: 0,
+        scale: 0.95,
+        rotateX: -4,
+        z: -80,
+        filter: 'blur(4px)',
+      }}
+      transition={{ duration: 0.68, ease: [0.16, 1, 0.3, 1] }}
       className="min-h-[100dvh] bg-[var(--bg-wall)] pb-24 text-[var(--text-primary)] md:pb-0"
     >
       {/* Adaptive Sub-page Sticky Header (Pure Visitor Experience) */}
       <header className="pt-safe sticky top-0 z-30 border-b border-[var(--border-hairline)] bg-[var(--bg-glass)] backdrop-blur-md">
-        <div className="mx-auto flex min-h-16 max-w-[1440px] flex-wrap items-center justify-between gap-2.5 px-4 py-2 sm:min-h-18 sm:px-10 lg:px-16">
-          {/* Left: Back to Main Exhibition Hall */}
-          <button
-            type="button"
-            onClick={onBackToHall}
-            className="group flex h-10 shrink-0 items-center gap-2 border border-[var(--border-hairline)] bg-[var(--bg-plaque)] px-3 font-mono-plaque text-[10.5px] tracking-[0.15em] whitespace-nowrap text-[var(--text-primary)] uppercase transition-all duration-300 hover:border-[var(--accent-gallery)] hover:bg-[var(--accent-gallery)] hover:text-[#FAF9F5] active:scale-[0.98] sm:px-3.5 sm:text-[11px]"
-          >
-            <ArrowLeft
-              className="h-3.5 w-3.5 transition-transform duration-300 group-hover:-translate-x-0.5"
-              strokeWidth={1.5}
-            />
-            <span>← Quay lại Sảnh Triển Lãm</span>
-          </button>
+        <div className="mx-auto flex min-h-18 max-w-[1440px] flex-wrap items-center justify-between gap-2.5 px-4 py-2 sm:min-h-20 sm:px-10 md:min-h-22 lg:px-16">
+          {/* Left: Back to Main Exhibition Hall + Transparent Cutout Brand Identity */}
+          <div className="flex items-center gap-3.5 md:gap-4">
+            <button
+              type="button"
+              onClick={onBackToHall}
+              className="group flex h-10 shrink-0 items-center gap-2 border border-[var(--border-hairline)] bg-[var(--bg-plaque)] px-3 font-mono-plaque text-[10.5px] tracking-[0.15em] whitespace-nowrap text-[var(--text-primary)] uppercase transition-all duration-300 hover:border-[var(--accent-gallery)] hover:bg-[var(--accent-gallery)] hover:text-[#FAF9F5] active:scale-[0.98] sm:px-3.5 sm:text-[11px]"
+            >
+              <ArrowLeft
+                className="h-3.5 w-3.5 transition-transform duration-300 group-hover:-translate-x-0.5"
+                strokeWidth={1.5}
+              />
+              <span>← Quay lại Sảnh Triển Lãm</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onBackToHall}
+              className="hidden items-center gap-3.5 text-left md:flex md:gap-4"
+            >
+              {siteSettings.showAvatarInHeader !== false &&
+                siteSettings.brandAvatar && (
+                  <img
+                    src={siteSettings.brandAvatar}
+                    alt={siteSettings.brandName}
+                    className="bg-transparent border-none shadow-none object-contain h-11 md:h-14 w-auto transition-transform duration-500 hover:scale-105"
+                  />
+                )}
+              <span className="whitespace-nowrap text-2xl sm:text-3xl md:text-4xl font-serif font-semibold tracking-tight leading-none text-[var(--text-primary)]">
+                {siteSettings.brandName}
+              </span>
+            </button>
+          </div>
 
           {/* Center: Active Project Title */}
           <div className="hidden items-center gap-2.5 font-mono-plaque text-xs tracking-[0.18em] uppercase xl:flex">

@@ -1,6 +1,20 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Columns2, Expand, GalleryHorizontalEnd, Maximize2, Sparkles } from 'lucide-react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import {
+  motion,
+  useMotionTemplate,
+  useMotionValue,
+  useScroll,
+  useSpring,
+  useTransform,
+} from 'framer-motion';
+import {
+  Columns2,
+  Expand,
+  GalleryHorizontalEnd,
+  Maximize2,
+  Sparkles,
+} from 'lucide-react';
+import { useViewportDevice } from '../hooks/useViewportDevice';
 import type { GalleryImage } from '../types/portfolio';
 
 interface SmartGalleryGridProps {
@@ -37,11 +51,231 @@ function formatRatioBadge(ar: number): string {
   return `AR ${ar.toFixed(2)}:1`;
 }
 
+interface Plate3DCardProps {
+  item: EnrichedGalleryItem;
+  projectTitle: string;
+  showInspectorBadges: boolean;
+  compactMobileBadge?: boolean;
+  customStyle?: React.CSSProperties;
+  extraClassName?: string;
+  useTouch3DMode: boolean;
+  onImageLoad: (id: string, event: React.SyntheticEvent<HTMLImageElement>) => void;
+  onOpenLightbox: (index: number) => void;
+}
+
+const Plate3DCard: React.FC<Plate3DCardProps> = ({
+  item,
+  projectTitle,
+  showInspectorBadges,
+  compactMobileBadge = false,
+  customStyle,
+  extraClassName = '',
+  useTouch3DMode,
+  onImageLoad,
+  onOpenLightbox,
+}) => {
+  const figureRef = useRef<HTMLElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const plateNumber = String(item.originalIndex + 1).padStart(2, '0');
+
+  // Desktop 3D Hover Tilt (±4deg) & Elevation (translateZ(15px))
+  const rawMouseX = useMotionValue(0);
+  const rawMouseY = useMotionValue(0);
+  const rawTranslateZ = useMotionValue(0);
+
+  const springMouseX = useSpring(rawMouseX, { stiffness: 160, damping: 22 });
+  const springMouseY = useSpring(rawMouseY, { stiffness: 160, damping: 22 });
+  const springTranslateZ = useSpring(rawTranslateZ, {
+    stiffness: 170,
+    damping: 22,
+  });
+
+  const desktopRotateX = useTransform(springMouseY, [-0.5, 0.5], [4, -4]);
+  const desktopRotateY = useTransform(springMouseX, [-0.5, 0.5], [-4, 4]);
+
+  // Moving specular glass reflection & luxury thin border highlight
+  const glareX = useTransform(springMouseX, [-0.5, 0.5], [86, 14]);
+  const glareY = useTransform(springMouseY, [-0.5, 0.5], [86, 14]);
+  const specularGlare = useMotionTemplate`radial-gradient(480px circle at ${glareX}% ${glareY}%, rgba(255, 250, 238, 0.22) 0%, rgba(200, 169, 126, 0.08) 38%, rgba(255, 255, 255, 0) 72%)`;
+
+  // Mobile Scroll-linked 3D gentle tilt
+  const { scrollYProgress } = useScroll({
+    target: figureRef,
+    offset: ['start end', 'end start'],
+  });
+  const mobileScrollRotateX = useTransform(
+    scrollYProgress,
+    [0, 0.5, 1],
+    [4, 0, -4]
+  );
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      if (useTouch3DMode) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+      const normX = (e.clientX - rect.left) / rect.width - 0.5;
+      const normY = (e.clientY - rect.top) / rect.height - 0.5;
+      rawMouseX.set(Math.max(-0.5, Math.min(0.5, normX)));
+      rawMouseY.set(Math.max(-0.5, Math.min(0.5, normY)));
+    },
+    [useTouch3DMode, rawMouseX, rawMouseY]
+  );
+
+  const handleMouseEnter = useCallback(() => {
+    if (!useTouch3DMode) {
+      setIsHovered(true);
+      rawTranslateZ.set(15);
+    }
+  }, [useTouch3DMode, rawTranslateZ]);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false);
+    rawMouseX.set(0);
+    rawMouseY.set(0);
+    rawTranslateZ.set(0);
+  }, [rawMouseX, rawMouseY, rawTranslateZ]);
+
+  return (
+    <motion.figure
+      ref={figureRef}
+      initial={{ opacity: 0, rotateX: 10, y: 36, z: -50 }}
+      whileInView={{ opacity: 1, rotateX: 0, y: 0, z: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
+      style={{
+        perspective: '1100px',
+        ...customStyle,
+      }}
+      onClick={() => onOpenLightbox(item.originalIndex)}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className={`group relative flex cursor-zoom-in flex-col ${extraClassName}`}
+    >
+      <motion.div
+        whileTap={{ scale: 0.97, rotateX: 3 }}
+        style={{
+          transformStyle: 'preserve-3d',
+          rotateX: useTouch3DMode ? mobileScrollRotateX : desktopRotateX,
+          rotateY: useTouch3DMode ? 0 : desktopRotateY,
+          z: useTouch3DMode ? 0 : springTranslateZ,
+        }}
+        className={`relative flex h-full w-full flex-col overflow-hidden border bg-[var(--bg-surface)] transition-[border-color,box-shadow] duration-500 will-change-transform ${
+          isHovered
+            ? 'border-[var(--accent-gallery)] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.45),0_0_24px_-4px_rgba(200,169,126,0.32)]'
+            : 'border-[var(--border-hairline)]'
+        }`}
+      >
+        {/* Luxury Specular Border & Glass Glare Layer on Hover */}
+        <motion.div
+          aria-hidden="true"
+          style={{
+            background: specularGlare,
+            transform: 'translateZ(8px)',
+          }}
+          className={`pointer-events-none absolute inset-0 z-20 transition-opacity duration-500 ${
+            isHovered ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+
+        {/* Subtle 1px Inner Specular Rim Highlight */}
+        <div
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-0 z-20 border transition-opacity duration-500 ${
+            isHovered
+              ? 'border-[#C8A97E]/45 opacity-100'
+              : 'border-transparent opacity-0'
+          }`}
+        />
+
+        {/* Plate Image Container: object-contain on Mobile to preserve 100% original aspect ratio, object-cover on Desktop justified rows */}
+        <div
+          className="relative w-full overflow-hidden bg-[var(--bg-primary)]"
+          style={{
+            aspectRatio: `${item.aspectRatio}`,
+          }}
+        >
+          <img
+            src={item.image.url}
+            alt={
+              item.image.caption || `${projectTitle} — Plate ${plateNumber}`
+            }
+            onLoad={(e) => onImageLoad(item.image.id, e)}
+            loading="lazy"
+            className="h-full w-full object-contain transition-transform duration-700 ease-out md:object-cover md:group-hover:scale-[1.03]"
+          />
+
+          {/* Subtle Museum Light Vignette on Desktop Hover */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 hidden bg-gradient-to-t from-black/65 via-black/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 md:block"
+          />
+
+          {/* Top-Left Smart Auto-Layout Technical Badge */}
+          {showInspectorBadges && (
+            <div
+              className={`pointer-events-none absolute top-2.5 left-2.5 z-10 flex flex-wrap items-center gap-1.5 bg-black/75 px-2 py-1 font-mono-plaque tracking-[0.13em] text-[#FAF9F5] uppercase backdrop-blur-xs sm:top-3 sm:left-3 sm:px-2.5 ${
+                compactMobileBadge
+                  ? 'text-[8.5px] sm:text-[10px]'
+                  : 'text-[9.5px] sm:text-[10px]'
+              }`}
+            >
+              <span className="text-[#C8A97E]">PLATE {plateNumber}</span>
+              <span className="opacity-50">|</span>
+              <span>{formatRatioBadge(item.aspectRatio)}</span>
+              {!compactMobileBadge && (
+                <>
+                  <span className="hidden opacity-50 sm:inline">|</span>
+                  <span className="hidden text-neutral-300 sm:inline">
+                    {item.width}×{item.height}
+                  </span>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Top-Right Zoom Trigger Pill */}
+          <div className="pointer-events-none absolute top-2.5 right-2.5 z-10 flex h-7 w-7 items-center justify-center border border-white/20 bg-black/65 text-white opacity-85 transition-all duration-300 sm:top-3 sm:right-3 sm:h-8 sm:w-8 md:opacity-0 md:group-hover:opacity-100">
+            <Maximize2 className="h-3.5 w-3.5" strokeWidth={1.5} />
+          </div>
+
+          {/* Desktop Bottom Overlay Caption & Auto-Layout Rule Indicator */}
+          <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 z-10 hidden flex-col justify-end p-4 text-[#FAF9F5] opacity-0 transition-opacity duration-400 group-hover:opacity-100 sm:p-5 md:flex">
+            <span className="mb-1 font-mono-plaque text-[9px] tracking-[0.18em] text-[#C8A97E] uppercase">
+              {item.ruleLabel}
+            </span>
+            <p className="font-sans-gallery text-xs leading-relaxed font-normal text-neutral-100 sm:text-sm">
+              {item.image.caption}
+            </p>
+          </figcaption>
+        </div>
+
+        {/* Mobile-Only Visible Plaque Caption (Since mobile has no hover state) */}
+        {item.image.caption && (
+          <div className="flex flex-col gap-0.5 border-t border-[var(--border-hairline)] bg-[var(--bg-plaque)] px-3 py-2.5 md:hidden">
+            <span className="font-mono-plaque text-[8.5px] tracking-[0.16em] text-[var(--accent-gallery)] uppercase">
+              {item.ruleLabel}
+            </span>
+            <p className="line-clamp-2 font-sans-gallery text-xs leading-relaxed text-[var(--text-secondary)]">
+              {item.image.caption}
+            </p>
+          </div>
+        )}
+      </motion.div>
+    </motion.figure>
+  );
+};
+
 export const SmartGalleryGrid: React.FC<SmartGalleryGridProps> = ({
   images,
   projectTitle,
   onOpenLightbox,
 }) => {
+  const { isMobile, isTouchDevice } = useViewportDevice();
+  const useTouch3DMode = isMobile || isTouchDevice;
+
   // Stores live naturalWidth & naturalHeight read directly from the DOM <img> onLoad event
   const [naturalDimensions, setNaturalDimensions] = useState<
     Record<string, { width: number; height: number }>
@@ -49,7 +283,9 @@ export const SmartGalleryGrid: React.FC<SmartGalleryGridProps> = ({
 
   const [showInspectorBadges, setShowInspectorBadges] = useState<boolean>(true);
   // Mobile pairing mode for adjacent portrait/square pairs: 'diptych' (2-Column) or 'snap' (Horizontal Snap-Scroll)
-  const [mobilePairMode, setMobilePairMode] = useState<'diptych' | 'snap'>('diptych');
+  const [mobilePairMode, setMobilePairMode] = useState<'diptych' | 'snap'>(
+    'diptych'
+  );
 
   const handleImageLoad = useCallback(
     (id: string, event: React.SyntheticEvent<HTMLImageElement>) => {
@@ -208,92 +444,20 @@ export const SmartGalleryGrid: React.FC<SmartGalleryGridProps> = ({
     customStyle?: React.CSSProperties,
     extraClassName = '',
     compactMobileBadge = false
-  ) => {
-    const plateNumber = String(item.originalIndex + 1).padStart(2, '0');
-
-    return (
-      <motion.figure
-        key={item.image.id}
-        initial={{ opacity: 0, y: 18 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-40px' }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        style={customStyle}
-        onClick={() => onOpenLightbox(item.originalIndex)}
-        className={`group relative flex cursor-zoom-in flex-col overflow-hidden border border-[var(--border-hairline)] bg-[var(--bg-surface)] transition-transform duration-200 active:scale-[0.99] ${extraClassName}`}
-      >
-        {/* Plate Image Container: object-contain on Mobile to preserve 100% original aspect ratio, object-cover on Desktop justified rows */}
-        <div
-          className="relative w-full overflow-hidden bg-[var(--bg-primary)]"
-          style={{
-            aspectRatio: `${item.aspectRatio}`,
-          }}
-        >
-          <img
-            src={item.image.url}
-            alt={item.image.caption || `${projectTitle} — Plate ${plateNumber}`}
-            onLoad={(e) => handleImageLoad(item.image.id, e)}
-            loading="lazy"
-            className="h-full w-full object-contain transition-transform duration-700 ease-out md:object-cover md:group-hover:scale-[1.02]"
-          />
-
-          {/* Subtle Museum Light Vignette on Desktop Hover */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 hidden bg-gradient-to-t from-black/60 via-black/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 md:block"
-          />
-
-          {/* Top-Left Smart Auto-Layout Technical Badge */}
-          {showInspectorBadges && (
-            <div
-              className={`pointer-events-none absolute top-2.5 left-2.5 z-10 flex flex-wrap items-center gap-1.5 bg-black/75 px-2 py-1 font-mono-plaque tracking-[0.13em] text-[#FAF9F5] uppercase backdrop-blur-xs sm:top-3 sm:left-3 sm:px-2.5 ${
-                compactMobileBadge ? 'text-[8.5px] sm:text-[10px]' : 'text-[9.5px] sm:text-[10px]'
-              }`}
-            >
-              <span className="text-[#C8A97E]">PLATE {plateNumber}</span>
-              <span className="opacity-50">|</span>
-              <span>{formatRatioBadge(item.aspectRatio)}</span>
-              {!compactMobileBadge && (
-                <>
-                  <span className="hidden opacity-50 sm:inline">|</span>
-                  <span className="hidden text-neutral-300 sm:inline">
-                    {item.width}×{item.height}
-                  </span>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Top-Right Zoom Trigger Pill */}
-          <div className="pointer-events-none absolute top-2.5 right-2.5 z-10 flex h-7 w-7 items-center justify-center border border-white/20 bg-black/65 text-white opacity-85 transition-all duration-300 sm:top-3 sm:right-3 sm:h-8 sm:w-8 md:opacity-0 md:group-hover:opacity-100">
-            <Maximize2 className="h-3.5 w-3.5" strokeWidth={1.5} />
-          </div>
-
-          {/* Desktop Bottom Overlay Caption & Auto-Layout Rule Indicator */}
-          <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 z-10 hidden flex-col justify-end p-4 text-[#FAF9F5] opacity-0 transition-opacity duration-400 group-hover:opacity-100 sm:p-5 md:flex">
-            <span className="mb-1 font-mono-plaque text-[9px] tracking-[0.18em] text-[#C8A97E] uppercase">
-              {item.ruleLabel}
-            </span>
-            <p className="font-sans-gallery text-xs leading-relaxed font-normal text-neutral-100 sm:text-sm">
-              {item.image.caption}
-            </p>
-          </figcaption>
-        </div>
-
-        {/* Mobile-Only Visible Plaque Caption (Since mobile has no hover state) */}
-        {item.image.caption && (
-          <div className="flex flex-col gap-0.5 border-t border-[var(--border-hairline)] bg-[var(--bg-plaque)] px-3 py-2.5 md:hidden">
-            <span className="font-mono-plaque text-[8.5px] tracking-[0.16em] text-[var(--accent-gallery)] uppercase">
-              {item.ruleLabel}
-            </span>
-            <p className="line-clamp-2 font-sans-gallery text-xs leading-relaxed text-[var(--text-secondary)]">
-              {item.image.caption}
-            </p>
-          </div>
-        )}
-      </motion.figure>
-    );
-  };
+  ) => (
+    <Plate3DCard
+      key={item.image.id}
+      item={item}
+      projectTitle={projectTitle}
+      showInspectorBadges={showInspectorBadges}
+      compactMobileBadge={compactMobileBadge}
+      customStyle={customStyle}
+      extraClassName={extraClassName}
+      useTouch3DMode={useTouch3DMode}
+      onImageLoad={handleImageLoad}
+      onOpenLightbox={onOpenLightbox}
+    />
+  );
 
   return (
     <div className="space-y-5 md:space-y-6">
@@ -306,7 +470,7 @@ export const SmartGalleryGrid: React.FC<SmartGalleryGridProps> = ({
           />
           <span>
             SMART AUTO-LAYOUT ENGINE: ACTIVE ({enrichedItems.length} PLATES ·{' '}
-            {layoutRows.length} CURATED ROWS)
+            {layoutRows.length} CURATED ROWS · 3D ELEVATION)
           </span>
         </div>
 
