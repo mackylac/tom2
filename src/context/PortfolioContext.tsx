@@ -118,6 +118,24 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({
     saveProjectsToStorage(projects);
   }, [projects]);
 
+  // In local development, automatically mirror live Admin edits from localStorage into src/data/portfolio-data.json
+  // so that git commit & git push to GitHub/Vercel always includes the user's latest projects, brand name, and avatar.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const timer = window.setTimeout(() => {
+      fetch('/__sync_portfolio_data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(
+          buildCanonicalArchivePayload(projects, siteSettings)
+        ),
+      }).catch(() => {
+        // Ignore dev sync network errors
+      });
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [projects, siteSettings]);
+
   useEffect(() => {
     saveSiteSettingsToStorage(siteSettings);
     document.title = `${siteSettings.brandName} — Digital Art Gallery`;
