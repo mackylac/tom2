@@ -5,11 +5,7 @@ import type {
   Project,
   SiteSettings,
 } from '../types/portfolio';
-import {
-  isCloudSyncConfigured,
-  loadCloudSyncConfig,
-  uploadImageToSupabaseStorage,
-} from './cloudSync';
+import { uploadImageToSupabaseStorage } from './cloudSync';
 
 const STORAGE_KEY_PROJECTS = 'atelier_vespera_projects_v2';
 const STORAGE_KEY_SITE_SETTINGS = 'atelier_vespera_site_settings_v2';
@@ -257,11 +253,14 @@ export function parseAndValidatePortfolioJson(jsonText: string): {
 }
 
 /**
- * Reads an image File, compresses to WebP (or uploads to Supabase Storage if configured),
- * and returns its URL/DataURL plus exact natural width & height for SmartGalleryGrid.
+ * Reads an image File's natural dimensions, uploads the file directly to
+ * Supabase Storage bucket `portfolio-images` (with safe ASCII filename + Date.now()),
+ * and returns its `publicUrl` plus exact natural width & height for SmartGalleryGrid.
+ * NEVER stores heavy Base64 strings into the database.
  */
 export function processUploadedImageFile(
-  file: File
+  file: File,
+  folder = 'uploads'
 ): Promise<{
   dataUrl: string;
   width: number;
@@ -269,78 +268,39 @@ export function processUploadedImageFile(
   cloudUploaded?: boolean;
 }> {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = async () => {
-        const maxDim = 1600;
-        let targetW = img.naturalWidth || 1200;
-        let targetH = img.naturalHeight || 900;
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
 
-        if (targetW > maxDim || targetH > maxDim) {
-          if (targetW > targetH) {
-            targetH = Math.round((targetH * maxDim) / targetW);
-            targetW = maxDim;
-          } else {
-            targetW = Math.round((targetW * maxDim) / targetH);
-            targetH = maxDim;
-          }
-        }
+    img.onload = async () => {
+      const naturalW = img.naturalWidth || 1200;
+      const naturalH = img.naturalHeight || 900;
+      URL.revokeObjectURL(objectUrl);
 
-        // If Supabase Cloud Storage is configured and autoSync is enabled, try uploading to Cloud first
-        const cloudConfig = loadCloudSyncConfig();
-        if (isCloudSyncConfigured(cloudConfig) && cloudConfig.autoSyncOnSave) {
-          const uploadRes = await uploadImageToSupabaseStorage(
-            file,
-            'exhibits',
-            cloudConfig
-          );
-          if (uploadRes.ok && uploadRes.publicUrl) {
-            resolve({
-              dataUrl: uploadRes.publicUrl,
-              width: img.naturalWidth || targetW,
-              height: img.naturalHeight || targetH,
-              cloudUploaded: true,
-            });
-            return;
-          }
-        }
-
-        const canvas = document.createElement('canvas');
-        canvas.width = targetW;
-        canvas.height = targetH;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          resolve({
-            dataUrl: String(reader.result),
-            width: targetW,
-            height: targetH,
-          });
-          return;
-        }
-        ctx.drawImage(img, 0, 0, targetW, targetH);
-
-        // Prefer WebP compression (supports full alpha transparency), fallback to PNG for transparent cutouts or JPEG
-        let dataUrl = canvas.toDataURL('image/webp', 0.9);
-        if (!dataUrl.startsWith('data:image/webp')) {
-          dataUrl =
-            file.type === 'image/png'
-              ? canvas.toDataURL('image/png')
-              : canvas.toDataURL('image/jpeg', 0.85);
-        }
-
+      const uploadRes = await uploadImageToSupabaseStorage(file, folder);
+      if (uploadRes.ok && uploadRes.publicUrl) {
         resolve({
-          dataUrl,
-          width: targetW,
-          height: targetH,
-          cloudUploaded: false,
+          dataUrl: uploadRes.publicUrl,
+          width: naturalW,
+          height: naturalH,
+          cloudUploaded: true,
         });
-      };
-      img.onerror = () => reject(new Error('Không thể đọc file hình ảnh.'));
-      img.src = String(reader.result);
+        return;
+      }
+
+      reject(
+        new Error(
+          uploadRes.message ||
+            'Không thể tải ảnh lên Supabase Storage bucket portfolio-images.'
+        )
+      );
     };
-    reader.onerror = () => reject(new Error('Lỗi khi tải file.'));
-    reader.readAsDataURL(file);
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Không thể đọc file hình ảnh.'));
+    };
+
+    img.src = objectUrl;
   });
 }
 

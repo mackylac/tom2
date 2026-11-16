@@ -3,13 +3,13 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { DEFAULT_SITE_SETTINGS, SEED_PROJECTS } from '../data/seedProjects';
 import {
-  isCloudSyncConfigured,
-  loadCloudSyncConfig,
-  pushPortfolioToSupabase,
+  fetchPortfolioFromSupabaseStore,
+  upsertPortfolioToSupabaseStore,
 } from '../services/cloudSync';
 import {
   buildCanonicalArchivePayload,
@@ -69,11 +69,32 @@ interface PortfolioContextValue {
   loginAdmin: (pin: string) => boolean;
   logoutAdmin: () => void;
   lastSavedAt: string;
+  isCloudHydrated: boolean;
+  cloudStatus: 'loading' | 'saving' | 'synced' | 'error';
+  cloudStatusMessage: string;
 }
 
 const PortfolioContext = createContext<PortfolioContextValue | undefined>(
   undefined
 );
+
+function mergeSiteSettingsWithDefaults(
+  partial?: Partial<SiteSettings>
+): SiteSettings {
+  if (!partial) return DEFAULT_SITE_SETTINGS;
+  return {
+    ...DEFAULT_SITE_SETTINGS,
+    ...partial,
+    socialLinks: {
+      ...DEFAULT_SITE_SETTINGS.socialLinks,
+      ...(partial.socialLinks ?? {}),
+    },
+    categories:
+      Array.isArray(partial.categories) && partial.categories.length > 0
+        ? partial.categories
+        : DEFAULT_SITE_SETTINGS.categories,
+  };
+}
 
 export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -109,39 +130,117 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({
     })
   );
 
+  const [isCloudHydrated, setIsCloudHydrated] = useState<boolean>(false);
+  const [cloudStatus, setCloudStatus] = useState<
+    'loading' | 'saving' | 'synced' | 'error'
+  >('loading');
+  const [cloudStatusMessage, setCloudStatusMessage] = useState<string>(
+    'Đang đồng bộ dữ liệu từ Supabase Cloud...'
+  );
+
+  // Prevents auto-upsert from running before the initial cloud fetch completes
+  const hasHydratedFromCloudRef = useRef<boolean>(false);
+  const skipNextAutoSyncRef = useRef<boolean>(false);
+
   const visibleProjects = useMemo(
     () => projects.filter((p) => !p.hidden),
     [projects]
   );
 
+  // ============================================================================
+  // 1. INITIAL LOAD FROM SUPABASE (`public.portfolio_store`, id = 'main')
+  // ============================================================================
+  useEffect(() => {
+    let isMounted = true;
+
+    async function hydrateFromSupabase() {
+      setCloudStatus('loading');
+      const res = await fetchPortfolioFromSupabaseStore();
+      if (!isMounted) return;
+
+      if (res.ok && res.exists && res.projects && res.projects.length > 0) {
+        // Row 'main' exists on Supabase with projects -> Always prioritize Cloud data!
+        const normalizedCloudProjects = normalizeExhibitNumbers(res.projects);
+        const mergedCloudSettings = mergeSiteSettingsWithDefaults(
+          res.siteSettings
+        );
+
+        skipNextAutoSyncRef.current = true;
+        setProjects(normalizedCloudProjects);
+        setSiteSettings(mergedCloudSettings);
+        saveProjectsToStorage(normalizedCloudProjects);
+        saveSiteSettingsToStorage(mergedCloudSettings);
+
+        setSelectedManagerProjectId((prevId) => {
+          if (
+            prevId &&
+            normalizedCloudProjects.some((p) => p.id === prevId)
+          ) {
+            return prevId;
+          }
+          return normalizedCloudProjects[0]?.id ?? null;
+        });
+
+        hasHydratedFromCloudRef.current = true;
+        setIsCloudHydrated(true);
+        setCloudStatus('synced');
+        setCloudStatusMessage('Đã đồng bộ từ Supabase Cloud');
+      } else if (res.ok && !res.exists) {
+        // Row 'main' does not exist yet on Supabase -> Initialize row 'main' with default data
+        const initialProjects = loadProjectsFromStorage();
+        const initialSettings = loadSiteSettingsFromStorage();
+        const seedRes = await upsertPortfolioToSupabaseStore(
+          initialProjects,
+          initialSettings
+        );
+        if (!isMounted) return;
+
+        if (seedRes.ok) {
+          skipNextAutoSyncRef.current = true;
+          setProjects(seedRes.projects);
+          setSiteSettings(seedRes.siteSettings);
+          saveProjectsToStorage(seedRes.projects);
+          saveSiteSettingsToStorage(seedRes.siteSettings);
+        }
+
+        hasHydratedFromCloudRef.current = true;
+        setIsCloudHydrated(true);
+        setCloudStatus(seedRes.ok ? 'synced' : 'error');
+        setCloudStatusMessage(
+          seedRes.ok
+            ? 'Đã khởi tạo dữ liệu lên Supabase Cloud'
+            : seedRes.message
+        );
+      } else {
+        // Network error or offline -> keep local cache, enable future saves
+        hasHydratedFromCloudRef.current = true;
+        setIsCloudHydrated(true);
+        setCloudStatus('error');
+        setCloudStatusMessage(res.message);
+      }
+    }
+
+    hydrateFromSupabase();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // ============================================================================
+  // 2. LOCAL CACHE & FAVICON SYNC
+  // ============================================================================
   useEffect(() => {
     saveProjectsToStorage(projects);
   }, [projects]);
-
-  // In local development, automatically mirror live Admin edits from localStorage into src/data/portfolio-data.json
-  // so that git commit & git push to GitHub/Vercel always includes the user's latest projects, brand name, and avatar.
-  useEffect(() => {
-    if (!import.meta.env.DEV) return;
-    const timer = window.setTimeout(() => {
-      fetch('/__sync_portfolio_data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(
-          buildCanonicalArchivePayload(projects, siteSettings)
-        ),
-      }).catch(() => {
-        // Ignore dev sync network errors
-      });
-    }, 350);
-    return () => window.clearTimeout(timer);
-  }, [projects, siteSettings]);
 
   useEffect(() => {
     saveSiteSettingsToStorage(siteSettings);
     document.title = `${siteSettings.brandName} — Digital Art Gallery`;
 
     if (siteSettings.brandAvatar) {
-      let iconLink = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
+      let iconLink =
+        document.querySelector<HTMLLinkElement>("link[rel~='icon']");
       if (!iconLink) {
         iconLink = document.createElement('link');
         iconLink.rel = 'icon';
@@ -157,6 +256,53 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     }
   }, [siteSettings]);
+
+  // ============================================================================
+  // 3. AUTO-UPSERT TO SUPABASE WHEN ADMIN MODIFIES PROJECTS OR SITE SETTINGS
+  // ============================================================================
+  useEffect(() => {
+    if (!hasHydratedFromCloudRef.current) return;
+    if (skipNextAutoSyncRef.current) {
+      skipNextAutoSyncRef.current = false;
+      return;
+    }
+
+    setCloudStatus('saving');
+    setCloudStatusMessage('Đang lưu lên Supabase Cloud...');
+
+    const timer = window.setTimeout(async () => {
+      const res = await upsertPortfolioToSupabaseStore(projects, siteSettings);
+      if (res.ok) {
+        setCloudStatus('synced');
+        setCloudStatusMessage('Đã lưu lên Cloud thành công!');
+        setLastSavedAt(
+          new Date().toLocaleTimeString('vi-VN', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          })
+        );
+      } else {
+        setCloudStatus('error');
+        setCloudStatusMessage(res.message);
+      }
+
+      // In local development, also mirror to src/data/portfolio-data.json
+      if (import.meta.env.DEV) {
+        fetch('/__sync_portfolio_data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(
+            buildCanonicalArchivePayload(res.projects, res.siteSettings)
+          ),
+        }).catch(() => {
+          // Ignore dev sync network errors
+        });
+      }
+    }, 600);
+
+    return () => window.clearTimeout(timer);
+  }, [projects, siteSettings]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-lighting', lightingMode);
@@ -186,11 +332,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({
     setSiteSettings((prev) => {
       const next =
         typeof updater === 'function' ? updater(prev) : { ...prev, ...updater };
-      // If defaultLightingMode changed, also apply it immediately so the admin sees the change
-      if (
-        !(' socialLinks' in next) &&
-        next.defaultLightingMode !== prev.defaultLightingMode
-      ) {
+      if (next.defaultLightingMode !== prev.defaultLightingMode) {
         setLightingModeState(next.defaultLightingMode);
       }
       return next;
@@ -207,9 +349,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({
     }));
 
     setProjects((prev) =>
-      prev.map((proj) =>
-        proj.category === oldName ? { ...proj, category: trimmed } : proj
-      )
+      prev.map((p) => (p.category === oldName ? { ...p, category: trimmed } : p))
     );
 
     if (activeCategory === oldName) {
@@ -230,25 +370,30 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsStudioManagerOpen(false);
   };
 
-  const addProject = (project: Project) => {
-    setProjects((prev) => resequenceExhibitNumbers([project, ...prev]));
-    setSelectedManagerProjectId(project.id);
+  const addProject = (newProject: Project) => {
+    setProjects((prev) => {
+      const updated = normalizeExhibitNumbers([newProject, ...prev]);
+      return updated;
+    });
+    setSelectedManagerProjectId(newProject.id);
   };
 
-  const updateProject = (updated: Project) => {
+  const updateProject = (updatedProject: Project) => {
     setProjects((prev) =>
-      prev.map((item) => (item.id === updated.id ? updated : item))
+      prev.map((item) =>
+        item.id === updatedProject.id ? updatedProject : item
+      )
     );
   };
 
   const deleteProject = (id: string) => {
     setProjects((prev) => {
       const filtered = prev.filter((item) => item.id !== id);
-      const next = resequenceExhibitNumbers(filtered);
+      const nextList = resequenceExhibitNumbers(filtered);
       if (selectedManagerProjectId === id) {
-        setSelectedManagerProjectId(next[0]?.id ?? null);
+        setSelectedManagerProjectId(nextList[0]?.id ?? null);
       }
-      return next;
+      return nextList;
     });
   };
 
@@ -276,38 +421,55 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({
     setSiteSettings(DEFAULT_SITE_SETTINGS);
     setLightingModeState(DEFAULT_SITE_SETTINGS.defaultLightingMode);
     setSelectedManagerProjectId(SEED_PROJECTS[0]?.id ?? null);
-    saveProjectsToStorage(SEED_PROJECTS);
-    saveSiteSettingsToStorage(DEFAULT_SITE_SETTINGS);
   };
 
+  /**
+   * Immediately saves to localStorage AND upserts `projects` & `site_settings`
+   * to `public.portfolio_store` (`id = 'main'`) on Supabase Cloud.
+   */
   const saveAndApplyAllNow = async (): Promise<{
     ok: boolean;
     message: string;
   }> => {
     saveProjectsToStorage(projects);
     saveSiteSettingsToStorage(siteSettings);
-    const nowLabel = new Date().toLocaleTimeString('vi-VN', {
+    saveLightingToStorage(lightingMode);
+
+    setCloudStatus('saving');
+    setCloudStatusMessage('Đang lưu lên Supabase Cloud...');
+
+    const cloudRes = await upsertPortfolioToSupabaseStore(
+      projects,
+      siteSettings
+    );
+
+    const nowStr = new Date().toLocaleTimeString('vi-VN', {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
     });
-    setLastSavedAt(nowLabel);
+    setLastSavedAt(nowStr);
 
-    const cloudConfig = loadCloudSyncConfig();
-    if (isCloudSyncConfigured(cloudConfig) && cloudConfig.autoSyncOnSave) {
-      const payload = buildCanonicalArchivePayload(projects, siteSettings);
-      const cloudRes = await pushPortfolioToSupabase(payload, cloudConfig);
+    if (cloudRes.ok) {
+      skipNextAutoSyncRef.current = true;
+      setProjects(cloudRes.projects);
+      setSiteSettings(cloudRes.siteSettings);
+      saveProjectsToStorage(cloudRes.projects);
+      saveSiteSettingsToStorage(cloudRes.siteSettings);
+
+      setCloudStatus('synced');
+      setCloudStatusMessage('Đã lưu lên Cloud thành công!');
       return {
-        ok: cloudRes.ok,
-        message: cloudRes.ok
-          ? `Đã lưu & áp dụng tức thì lúc ${nowLabel} (Đồng bộ Supabase Cloud thành công).`
-          : `Đã lưu cục bộ lúc ${nowLabel}. Cảnh báo Cloud: ${cloudRes.message}`,
+        ok: true,
+        message: 'Đã lưu lên Cloud thành công!',
       };
     }
 
+    setCloudStatus('error');
+    setCloudStatusMessage(cloudRes.message);
     return {
-      ok: true,
-      message: `Đã Lưu & Áp Dụng Ngay toàn bộ ${projects.length} dự án và cấu hình website lúc ${nowLabel}.`,
+      ok: false,
+      message: cloudRes.message,
     };
   };
 
@@ -337,10 +499,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({
       setSelectedManagerProjectId(normalized[0]?.id ?? null);
     }
     if (archive.siteSettings) {
-      setSiteSettings({
-        ...DEFAULT_SITE_SETTINGS,
-        ...archive.siteSettings,
-      });
+      setSiteSettings(mergeSiteSettingsWithDefaults(archive.siteSettings));
     }
   };
 
@@ -389,6 +548,9 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({
         loginAdmin,
         logoutAdmin,
         lastSavedAt,
+        isCloudHydrated,
+        cloudStatus,
+        cloudStatusMessage,
       }}
     >
       {children}

@@ -141,6 +141,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     loginAdmin,
     logoutAdmin,
     lastSavedAt,
+    cloudStatus,
+    cloudStatusMessage,
   } = usePortfolio();
 
   // Authentication Gate State
@@ -415,8 +417,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     if (!file || !selectedProject) return;
     setIsBusy(true);
     try {
-      const { dataUrl, width, height, cloudUploaded } =
-        await processUploadedImageFile(file);
+      const { dataUrl, width, height } = await processUploadedImageFile(
+        file,
+        'covers'
+      );
       const ar = width / Math.max(height, 1);
       const inferredAspect: Project['coverAspect'] =
         ar < 0.92 ? 'portrait' : ar > 1.15 ? 'landscape' : 'square';
@@ -428,12 +432,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       });
 
       showToast(
-        `Đã cập nhật Ảnh Bìa (${width}×${height}px · ${
-          cloudUploaded ? 'Cloud CDN' : 'Nén WebP/Base64'
-        }).`
+        `Đã tải Ảnh Bìa (${width}×${height}px) lên Supabase Storage & Đã lưu lên Cloud thành công!`
       );
-    } catch {
-      showToast('Không thể xử lý file ảnh bìa.');
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : 'Không thể xử lý file ảnh bìa.'
+      );
     } finally {
       setIsBusy(false);
       e.target.value = '';
@@ -450,7 +454,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       const newPlates: GalleryImage[] = [];
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const { dataUrl, width, height } = await processUploadedImageFile(file);
+        const { dataUrl, width, height } = await processUploadedImageFile(
+          file,
+          'gallery'
+        );
         const cleanName = file.name
           .replace(/\.[^/.]+$/, '')
           .replace(/[-_]/g, ' ');
@@ -470,10 +477,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       });
 
       showToast(
-        `Đã tải lên hàng loạt ${newPlates.length} ảnh và tự động đo tỷ lệ naturalWidth / naturalHeight!`
+        `Đã tải lên ${newPlates.length} ảnh vào bucket portfolio-images & Đã lưu lên Cloud thành công!`
       );
-    } catch {
-      showToast('Có lỗi khi tải lên danh sách ảnh.');
+    } catch (err) {
+      showToast(
+        err instanceof Error
+          ? err.message
+          : 'Có lỗi khi tải lên danh sách ảnh.'
+      );
     } finally {
       setIsBusy(false);
       e.target.value = '';
@@ -578,16 +589,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     if (!file) return;
     setIsBusy(true);
     try {
-      const { dataUrl, width, height, cloudUploaded } =
-        await processUploadedImageFile(file);
+      const { dataUrl, width, height } = await processUploadedImageFile(
+        file,
+        'avatars'
+      );
       updateSiteSettings({ brandAvatar: dataUrl });
       showToast(
-        `Đã cập nhật Avatar Website & Favicon (${width}×${height}px · ${
-          cloudUploaded ? 'Cloud CDN' : 'Nén WebP/Base64'
-        }).`
+        `Đã tải Avatar/Logo (${width}×${height}px) lên Supabase Storage & Đã lưu lên Cloud thành công!`
       );
-    } catch {
-      showToast('Không thể xử lý file ảnh Avatar.');
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : 'Không thể xử lý file ảnh Avatar.'
+      );
     } finally {
       setIsBusy(false);
       e.target.value = '';
@@ -656,7 +669,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     try {
       saveCloudSyncConfig(cloudConfig);
       const payload = buildCanonicalArchivePayload(projects, siteSettings);
-      const res = await pushPortfolioToSupabase(payload, cloudConfig);
+      const res = await pushPortfolioToSupabase(payload);
       showToast(res.message);
     } finally {
       setIsBusy(false);
@@ -667,7 +680,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setIsBusy(true);
     try {
       saveCloudSyncConfig(cloudConfig);
-      const res = await pullPortfolioFromSupabase(cloudConfig);
+      const res = await pullPortfolioFromSupabase();
       if (res.ok && res.data) {
         applyImportedArchive(res.data);
       }
@@ -756,8 +769,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <span>Đổi Avatar Web</span>
             </button>
 
-            <span className="hidden font-mono-plaque text-[10px] tracking-wider text-[var(--text-muted)] uppercase xl:inline">
-              Lưu gần nhất: {lastSavedAt}
+            <span
+              className={`hidden items-center gap-1.5 border px-2.5 py-1 font-mono-plaque text-[10px] tracking-wider uppercase xl:inline-flex ${
+                cloudStatus === 'synced'
+                  ? 'border-emerald-700/40 bg-emerald-950/15 text-emerald-500'
+                  : cloudStatus === 'saving' || cloudStatus === 'loading'
+                    ? 'border-[var(--accent-gallery)]/40 bg-[var(--accent-gallery-soft)] text-[var(--accent-gallery)]'
+                    : 'border-red-700/40 bg-red-950/15 text-red-500'
+              }`}
+            >
+              <span>{cloudStatusMessage}</span>
+              <span className="opacity-60">· {lastSavedAt}</span>
             </span>
 
             <button

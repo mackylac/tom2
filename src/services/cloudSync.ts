@@ -1,4 +1,16 @@
-import type { PortfolioArchivePayload } from '../types/portfolio';
+import type {
+  PortfolioArchivePayload,
+  Project,
+  SiteSettings,
+} from '../types/portfolio';
+import {
+  PORTFOLIO_STORAGE_BUCKET,
+  PORTFOLIO_STORE_ROW_ID,
+  PORTFOLIO_STORE_TABLE,
+  SUPABASE_ANON_KEY,
+  SUPABASE_URL,
+  supabase,
+} from './supabaseClient';
 
 export interface CloudSyncConfig {
   supabaseUrl: string;
@@ -8,21 +20,15 @@ export interface CloudSyncConfig {
   autoSyncOnSave: boolean;
 }
 
-const STORAGE_KEY_CLOUD_CONFIG = 'atelier_vespera_supabase_config_v1';
+const STORAGE_KEY_CLOUD_CONFIG = 'atelier_vespera_supabase_config_v2';
 
 export function getDefaultCloudSyncConfig(): CloudSyncConfig {
-  const envUrl =
-    (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim() ?? '';
-  const envKey =
-    (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim() ??
-    '';
-
   return {
-    supabaseUrl: envUrl,
-    supabaseAnonKey: envKey,
-    bucketName: 'portfolio-assets',
-    tableName: 'portfolio_archive',
-    autoSyncOnSave: false,
+    supabaseUrl: SUPABASE_URL,
+    supabaseAnonKey: SUPABASE_ANON_KEY,
+    bucketName: PORTFOLIO_STORAGE_BUCKET,
+    tableName: PORTFOLIO_STORE_TABLE,
+    autoSyncOnSave: true,
   };
 }
 
@@ -33,11 +39,12 @@ export function loadCloudSyncConfig(): CloudSyncConfig {
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<CloudSyncConfig>;
       return {
-        supabaseUrl: parsed.supabaseUrl ?? defaults.supabaseUrl,
-        supabaseAnonKey: parsed.supabaseAnonKey ?? defaults.supabaseAnonKey,
-        bucketName: parsed.bucketName || defaults.bucketName,
-        tableName: parsed.tableName || defaults.tableName,
-        autoSyncOnSave: Boolean(parsed.autoSyncOnSave),
+        supabaseUrl: parsed.supabaseUrl?.trim() || defaults.supabaseUrl,
+        supabaseAnonKey:
+          parsed.supabaseAnonKey?.trim() || defaults.supabaseAnonKey,
+        bucketName: parsed.bucketName?.trim() || defaults.bucketName,
+        tableName: parsed.tableName?.trim() || defaults.tableName,
+        autoSyncOnSave: parsed.autoSyncOnSave ?? true,
       };
     }
   } catch {
@@ -63,65 +70,103 @@ export function isCloudSyncConfigured(
   );
 }
 
-function cleanBaseUrl(url: string): string {
-  return url.trim().replace(/\/+$/, '');
+/**
+ * Strips Vietnamese accents & special characters to produce a safe ASCII filename.
+ */
+export function sanitizeStorageFileName(originalName: string): string {
+  const withoutExt = originalName.replace(/\.[^/.]+$/, '');
+  const ascii = withoutExt
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[đĐ]/g, 'd')
+    .replace(/[^a-zA-Z0-9-_]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .toLowerCase();
+  return ascii || 'image';
 }
 
 /**
- * Uploads an image file to Supabase Storage Bucket and returns its Public CDN URL.
+ * Converts a Base64 data:image/... URL into a Blob for uploading to Supabase Storage.
+ */
+function dataUrlToBlob(dataUrl: string): {
+  blob: Blob;
+  ext: string;
+  mimeType: string;
+} | null {
+  try {
+    const [header, base64Data] = dataUrl.split(',');
+    if (!header || !base64Data) return null;
+    const mimeMatch = header.match(/data:([^;]+);base64/);
+    const mimeType = mimeMatch?.[1] || 'image/webp';
+    const ext = mimeType.includes('png')
+      ? 'png'
+      : mimeType.includes('jpeg') || mimeType.includes('jpg')
+        ? 'jpg'
+        : mimeType.includes('svg')
+          ? 'svg'
+          : 'webp';
+
+    const binary = atob(base64Data);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return {
+      blob: new Blob([bytes], { type: mimeType }),
+      ext,
+      mimeType,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Uploads an image File to Supabase Storage Bucket `portfolio-images`
+ * and returns its Public CDN URL (`publicUrl`).
  */
 export async function uploadImageToSupabaseStorage(
   file: File,
-  folder = 'exhibits',
-  config: CloudSyncConfig = loadCloudSyncConfig()
+  folder = 'uploads'
 ): Promise<{ ok: boolean; publicUrl?: string; message: string }> {
-  if (!isCloudSyncConfigured(config)) {
-    return {
-      ok: false,
-      message:
-        'Chưa cấu hình Supabase URL và API Key. Hệ thống sẽ dùng chế độ nén WebP/Base64 cục bộ.',
-    };
-  }
-
-  const baseUrl = cleanBaseUrl(config.supabaseUrl);
-  const ext = file.name.split('.').pop()?.toLowerCase() || 'webp';
-  const safeName = file.name
-    .replace(/\.[^/.]+$/, '')
-    .replace(/[^a-zA-Z0-9-_]/g, '-')
-    .toLowerCase();
-  const objectPath = `${folder}/${Date.now()}-${safeName}.${ext}`;
-  const endpoint = `${baseUrl}/storage/v1/object/${encodeURIComponent(
-    config.bucketName
-  )}/${objectPath}`;
+  const ext = (file.name.split('.').pop() || 'png')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+  const safeName = sanitizeStorageFileName(file.name);
+  const filePath = `${folder}/${Date.now()}-${safeName}.${ext || 'png'}`;
 
   try {
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        apikey: config.supabaseAnonKey,
-        Authorization: `Bearer ${config.supabaseAnonKey}`,
-        'Content-Type': file.type || 'image/webp',
-        'x-upsert': 'true',
-      },
-      body: file,
-    });
+    const { error: uploadError } = await supabase.storage
+      .from(PORTFOLIO_STORAGE_BUCKET)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true,
+        contentType: file.type || 'image/png',
+      });
 
-    if (!response.ok) {
-      const errText = await response.text();
+    if (uploadError) {
       return {
         ok: false,
-        message: `Lỗi tải ảnh lên Supabase Storage (${response.status}): ${errText}`,
+        message: `Lỗi tải ảnh lên Supabase Storage (${PORTFOLIO_STORAGE_BUCKET}): ${uploadError.message}`,
       };
     }
 
-    const publicUrl = `${baseUrl}/storage/v1/object/public/${encodeURIComponent(
-      config.bucketName
-    )}/${objectPath}`;
+    const { data } = supabase.storage
+      .from(PORTFOLIO_STORAGE_BUCKET)
+      .getPublicUrl(filePath);
+
+    if (!data?.publicUrl) {
+      return {
+        ok: false,
+        message: 'Không lấy được đường dẫn publicUrl từ Supabase Storage.',
+      };
+    }
 
     return {
       ok: true,
-      publicUrl,
-      message: 'Đã tải ảnh lên Supabase Storage CDN thành công.',
+      publicUrl: data.publicUrl,
+      message: 'Đã tải ảnh lên Supabase Storage thành công.',
     };
   } catch (err) {
     return {
@@ -135,74 +180,202 @@ export async function uploadImageToSupabaseStorage(
 }
 
 /**
- * Pushes the entire PortfolioArchivePayload (siteSettings + projects) to Supabase Database (or Storage fallback).
+ * Uploads a legacy Base64 data URL to `portfolio-images` bucket and returns its clean `publicUrl`.
  */
-export async function pushPortfolioToSupabase(
-  payload: PortfolioArchivePayload,
-  config: CloudSyncConfig = loadCloudSyncConfig()
-): Promise<{ ok: boolean; message: string }> {
-  if (!isCloudSyncConfigured(config)) {
-    return {
-      ok: false,
-      message:
-        'Vui lòng điền Supabase Project URL và Anon/Service API Key trước khi đồng bộ đám mây.',
-    };
+export async function uploadDataUrlToSupabaseStorage(
+  dataUrl: string,
+  prefix = 'asset'
+): Promise<string> {
+  if (!dataUrl.startsWith('data:image/')) {
+    return dataUrl;
+  }
+  const converted = dataUrlToBlob(dataUrl);
+  if (!converted) return dataUrl;
+
+  const filePath = `migrated/${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2, 7)}-${prefix}.${converted.ext}`;
+
+  const { error } = await supabase.storage
+    .from(PORTFOLIO_STORAGE_BUCKET)
+    .upload(filePath, converted.blob, {
+      cacheControl: '3600',
+      upsert: true,
+      contentType: converted.mimeType,
+    });
+
+  if (error) {
+    return dataUrl;
   }
 
-  const baseUrl = cleanBaseUrl(config.supabaseUrl);
-  const restEndpoint = `${baseUrl}/rest/v1/${encodeURIComponent(
-    config.tableName
-  )}`;
+  const { data } = supabase.storage
+    .from(PORTFOLIO_STORAGE_BUCKET)
+    .getPublicUrl(filePath);
 
+  return data?.publicUrl || dataUrl;
+}
+
+/**
+ * Ensures no Base64 strings remain in `projects` or `siteSettings` before saving to `public.portfolio_store`.
+ */
+export async function sanitizeBase64BeforeCloudSave(
+  projects: Project[],
+  siteSettings: SiteSettings
+): Promise<{ projects: Project[]; siteSettings: SiteSettings }> {
+  let cleanAvatar = siteSettings.brandAvatar ?? '';
+  if (cleanAvatar.startsWith('data:image/')) {
+    cleanAvatar = await uploadDataUrlToSupabaseStorage(
+      cleanAvatar,
+      'brand-avatar'
+    );
+  }
+
+  const cleanProjects = await Promise.all(
+    projects.map(async (proj) => {
+      let cover = proj.coverImage;
+      if (cover.startsWith('data:image/')) {
+        cover = await uploadDataUrlToSupabaseStorage(
+          cover,
+          `cover-${proj.exhibitNumber}`
+        );
+      }
+
+      const gallery = await Promise.all(
+        proj.galleryImages.map(async (img, idx) => {
+          if (img.url.startsWith('data:image/')) {
+            const uploadedUrl = await uploadDataUrlToSupabaseStorage(
+              img.url,
+              `plate-${proj.exhibitNumber}-${idx + 1}`
+            );
+            return { ...img, url: uploadedUrl };
+          }
+          return img;
+        })
+      );
+
+      return {
+        ...proj,
+        coverImage: cover,
+        galleryImages: gallery,
+      };
+    })
+  );
+
+  return {
+    projects: cleanProjects,
+    siteSettings: {
+      ...siteSettings,
+      brandAvatar: cleanAvatar,
+    },
+  };
+}
+
+/**
+ * Reads row `id = 'main'` from `public.portfolio_store` on Supabase.
+ */
+export async function fetchPortfolioFromSupabaseStore(): Promise<{
+  ok: boolean;
+  exists: boolean;
+  projects?: Project[];
+  siteSettings?: Partial<SiteSettings>;
+  updatedAt?: string;
+  message: string;
+}> {
   try {
-    const response = await fetch(restEndpoint, {
-      method: 'POST',
-      headers: {
-        apikey: config.supabaseAnonKey,
-        Authorization: `Bearer ${config.supabaseAnonKey}`,
-        'Content-Type': 'application/json',
-        Prefer: 'resolution=merge-duplicates,return=minimal',
-      },
-      body: JSON.stringify({
-        id: 'main',
-        updated_at: payload.updatedAt,
-        payload,
-      }),
-    });
+    const { data, error } = await supabase
+      .from(PORTFOLIO_STORE_TABLE)
+      .select('id, projects, site_settings, updated_at')
+      .eq('id', PORTFOLIO_STORE_ROW_ID)
+      .maybeSingle();
 
-    if (response.ok) {
+    if (error) {
       return {
-        ok: true,
-        message: `Đã đồng bộ thành công ${payload.projects.length} dự án và cấu hình website lên bảng Supabase "${config.tableName}".`,
+        ok: false,
+        exists: false,
+        message: `Lỗi đọc dữ liệu từ Supabase (${PORTFOLIO_STORE_TABLE}): ${error.message}`,
       };
     }
 
-    // Fallback: try uploading portfolio-data.json directly to Supabase Storage bucket
-    const storageEndpoint = `${baseUrl}/storage/v1/object/${encodeURIComponent(
-      config.bucketName
-    )}/portfolio-data.json`;
-    const storageRes = await fetch(storageEndpoint, {
-      method: 'POST',
-      headers: {
-        apikey: config.supabaseAnonKey,
-        Authorization: `Bearer ${config.supabaseAnonKey}`,
-        'Content-Type': 'application/json',
-        'x-upsert': 'true',
-      },
-      body: JSON.stringify(payload, null, 2),
-    });
-
-    if (storageRes.ok) {
+    if (!data) {
       return {
         ok: true,
-        message: `Đã lưu tệp portfolio-data.json lên Supabase Storage bucket "${config.bucketName}" thành công.`,
+        exists: false,
+        message: 'Chưa có dòng main trên bảng portfolio_store.',
       };
     }
 
-    const errText = await response.text();
+    const rowProjects = Array.isArray(data.projects)
+      ? (data.projects as Project[])
+      : [];
+    const rowSettings =
+      data.site_settings && typeof data.site_settings === 'object'
+        ? (data.site_settings as Partial<SiteSettings>)
+        : undefined;
+
+    return {
+      ok: true,
+      exists: rowProjects.length > 0,
+      projects: rowProjects,
+      siteSettings: rowSettings,
+      updatedAt: data.updated_at as string | undefined,
+      message: 'Đã tải dữ liệu từ Supabase Cloud thành công.',
+    };
+  } catch (err) {
     return {
       ok: false,
-      message: `Supabase phản hồi lỗi (${response.status}): ${errText}`,
+      exists: false,
+      message:
+        err instanceof Error
+          ? `Lỗi kết nối Supabase: ${err.message}`
+          : 'Không thể kết nối tới Supabase Cloud.',
+    };
+  }
+}
+
+/**
+ * Upserts row `id = 'main'` with `projects` and `site_settings` into `public.portfolio_store`.
+ */
+export async function upsertPortfolioToSupabaseStore(
+  projects: Project[],
+  siteSettings: SiteSettings
+): Promise<{
+  ok: boolean;
+  message: string;
+  projects: Project[];
+  siteSettings: SiteSettings;
+}> {
+  try {
+    // Automatically migrate any leftover Base64 images to `portfolio-images` bucket first
+    const sanitized = await sanitizeBase64BeforeCloudSave(
+      projects,
+      siteSettings
+    );
+
+    const nowIso = new Date().toISOString();
+    const { error } = await supabase.from(PORTFOLIO_STORE_TABLE).upsert(
+      {
+        id: PORTFOLIO_STORE_ROW_ID,
+        projects: sanitized.projects,
+        site_settings: sanitized.siteSettings,
+        updated_at: nowIso,
+      },
+      { onConflict: 'id' }
+    );
+
+    if (error) {
+      return {
+        ok: false,
+        message: `Lỗi lưu lên Supabase (${error.message})`,
+        projects: sanitized.projects,
+        siteSettings: sanitized.siteSettings,
+      };
+    }
+
+    return {
+      ok: true,
+      message: 'Đã lưu lên Cloud thành công!',
+      projects: sanitized.projects,
+      siteSettings: sanitized.siteSettings,
     };
   } catch (err) {
     return {
@@ -210,85 +383,55 @@ export async function pushPortfolioToSupabase(
       message:
         err instanceof Error
           ? `Không thể kết nối tới Supabase: ${err.message}`
-          : 'Lỗi kết nối mạng khi đồng bộ lên đám mây.',
+          : 'Lỗi mạng khi lưu lên Cloud.',
+      projects,
+      siteSettings,
     };
   }
 }
 
 /**
- * Pulls the latest PortfolioArchivePayload from Supabase Database (or Storage fallback).
+ * Compatibility wrapper for manual Push button in Tab 4 of /admin
  */
-export async function pullPortfolioFromSupabase(
-  config: CloudSyncConfig = loadCloudSyncConfig()
-): Promise<{
+export async function pushPortfolioToSupabase(
+  payload: PortfolioArchivePayload
+): Promise<{ ok: boolean; message: string }> {
+  const res = await upsertPortfolioToSupabaseStore(
+    payload.projects,
+    payload.siteSettings
+  );
+  return {
+    ok: res.ok,
+    message: res.message,
+  };
+}
+
+/**
+ * Compatibility wrapper for manual Pull button in Tab 4 of /admin
+ */
+export async function pullPortfolioFromSupabase(): Promise<{
   ok: boolean;
   message: string;
   data?: PortfolioArchivePayload;
 }> {
-  if (!isCloudSyncConfigured(config)) {
+  const res = await fetchPortfolioFromSupabaseStore();
+  if (!res.ok) {
+    return { ok: false, message: res.message };
+  }
+  if (!res.exists || !res.projects || res.projects.length === 0) {
     return {
       ok: false,
-      message:
-        'Vui lòng điền Supabase Project URL và API Key trước khi tải dữ liệu từ đám mây.',
+      message: 'Chưa có dữ liệu dự án trên bảng public.portfolio_store.',
     };
   }
-
-  const baseUrl = cleanBaseUrl(config.supabaseUrl);
-  const restEndpoint = `${baseUrl}/rest/v1/${encodeURIComponent(
-    config.tableName
-  )}?id=eq.main&select=payload`;
-
-  try {
-    const response = await fetch(restEndpoint, {
-      method: 'GET',
-      headers: {
-        apikey: config.supabaseAnonKey,
-        Authorization: `Bearer ${config.supabaseAnonKey}`,
-        Accept: 'application/json',
-      },
-    });
-
-    if (response.ok) {
-      const rows = (await response.json()) as Array<{
-        payload?: PortfolioArchivePayload;
-      }>;
-      if (Array.isArray(rows) && rows[0]?.payload) {
-        return {
-          ok: true,
-          message: 'Đã tải dữ liệu mới nhất từ Supabase Database thành công.',
-          data: rows[0].payload,
-        };
-      }
-    }
-
-    // Fallback: check public or authenticated Storage bucket for portfolio-data.json
-    const storageEndpoint = `${baseUrl}/storage/v1/object/public/${encodeURIComponent(
-      config.bucketName
-    )}/portfolio-data.json?t=${Date.now()}`;
-    const storageRes = await fetch(storageEndpoint);
-    if (storageRes.ok) {
-      const data = (await storageRes.json()) as PortfolioArchivePayload;
-      if (data && Array.isArray(data.projects)) {
-        return {
-          ok: true,
-          message: 'Đã tải tệp portfolio-data.json từ Supabase Storage thành công.',
-          data,
-        };
-      }
-    }
-
-    return {
-      ok: false,
-      message:
-        'Không tìm thấy bản ghi dữ liệu trên Supabase. Hãy nhấn "Push lên Đám Mây" lần đầu tiên để khởi tạo.',
-    };
-  } catch (err) {
-    return {
-      ok: false,
-      message:
-        err instanceof Error
-          ? `Lỗi kết nối Supabase: ${err.message}`
-          : 'Không thể tải dữ liệu từ đám mây.',
-    };
-  }
+  return {
+    ok: true,
+    message: 'Đã tải dữ liệu mới nhất từ Supabase Cloud thành công!',
+    data: {
+      version: '2.0.0',
+      updatedAt: res.updatedAt || new Date().toISOString(),
+      projects: res.projects,
+      siteSettings: (res.siteSettings as SiteSettings) || ({} as SiteSettings),
+    },
+  };
 }
